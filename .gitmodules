@@ -1,3 +1,6 @@
 [submodule "src/recorder.js"]
 	path = src/recorder.js
 	url = git://github.com/jwagener/recorder.js.git
+[submodule "src/soundmanager2"]
+	path = src/soundmanager2
+	url = git://github.com/scottschiller/SoundManager2.git

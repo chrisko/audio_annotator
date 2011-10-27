@@ -1,2 +1,5 @@
-Recording audio:
-https://github.com/jwagener/recorder.js
+We're recording audio with SoundCloud's recorder.js project:
+  https://github.com/jwagener/recorder.js
+
+And we'll control and play audio with SoundManager2:
+  http://www.schillmania.com/projects/soundmanager2
