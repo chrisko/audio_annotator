@@ -1,0 +1,3 @@
+[submodule "src/recorder.js"]
+	path = src/recorder.js
+	url = git://github.com/jwagener/recorder.js.git
