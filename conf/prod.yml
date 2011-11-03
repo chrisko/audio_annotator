@@ -1,0 +1,9 @@
+---
+rootdir: "/var/languishes"
+
+listen_port: 8080
+nginx_version: "1.0.8"
+
+jenkins_jobdir: "/Users/ckoenig/.jenkins/languishes"
+jenkins_port: 8585
+---
