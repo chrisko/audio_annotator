@@ -5,13 +5,31 @@
 ################################################################################
 ## Check the arguments and do some prep work ###################################
 ################################################################################
-USAGE="usage: $0 <deploydir>"
-[[ -z "$1" ]] && { echo $USAGE; exit 1; }
+USAGE="usage: $0 [debug|prod]"
 [[ "$1" = "-h" ]] && { echo $USAGE; exit 0; }
-# Grab the deployment root from that first argument:
-DEPLOYROOT=$1
+[[ ! -z "$2" ]] && { echo $USAGE; exit 1; }
 
-# Make sure the deployment root exists, whether it does already or not.
+# Get the target environment (test or prod) information:
+TARGETENV=$1
+[[ -z "$1" ]] && TARGETENV=debug
+
+ENVCONFIG=./conf/$TARGETENV.yml
+# Read the target environment's config file, for where to deploy to:
+[[ ! -d ./conf/ ]] && { echo "Can't find ./conf/ directory."; exit 1; }
+[[ ! -e $ENVCONFIG ]] && { echo "Can't find $ENVCONFIG."; exit 1; }
+
+if [[ `grep "^rootdir: " $ENVCONFIG | wc -l | awk '{print $1}'` -eq 0 ]]; then
+    echo "$ENVCONFIG doesn't seem to specify a rootdir parameter."
+    exit 1
+fi
+
+# And now extract that rootdir parameter from the environment config:
+DEPLOYROOT=`grep "^rootdir: " $ENVCONFIG | sed "s/^rootdir: \"\(.*\)\"$/\1/"`
+
+################################################################################
+## Check or create the deployment directories ##################################
+################################################################################
+# Create the deployment directory, if it doesn't already exist:
 if [[ ! -d $DEPLOYROOT ]]; then
     echo "Deployment root directory $DEPLOYROOT doesn't exist. Creating..."
     mkdir $DEPLOYROOT
