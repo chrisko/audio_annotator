@@ -19,7 +19,7 @@ create a file named org.nginx.nginx.plist, with the contents:
     <key>ProgramArguments</key>
     <array>
         <string>sudo</string>
-        <string>/usr/local/Cellar/nginx/1.0.6/sbin/nginx</string>
+        <string>/usr/local/Cellar/nginx/1.0.8/sbin/nginx</string>
         <string>-g</string>
         <string>daemon off;</string>
         <string>-c</string>
