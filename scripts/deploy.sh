@@ -45,6 +45,8 @@ fi
 # --delete : Delete extraneous files from destination directories.
 rsync -crt --delete src/site/ $DEPLOYROOT/site/
 
+cp src/recorder.js/recorder.* $DEPLOYROOT/site/
+
 ################################################################################
 ## Copy over the config ########################################################
 ################################################################################
