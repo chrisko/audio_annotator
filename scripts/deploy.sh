@@ -64,15 +64,16 @@ done
 ################################################################################
 # If nginx is running (check for a .pid file), send it a HUP to reload config:
 if [[ -e $DEPLOYROOT/run/nginx.pid ]]; then
-    if [[ ! `wc -l $DEPLOYROOT/run/nginx.pid` -eq 1 ]]; then
+    if [[ `wc -l $DEPLOYROOT/run/nginx.pid | awk '{print $1}'` -ne 1 ]]; then
         echo "$DEPLOYROOT/run/nginx.pid needs to have exactly one line."
         exit 1
     fi
 
     NGINXPID=`cat $DEPLOYROOT/run/nginx.pid`
     echo "nginx is running under process $NGINXPID"
+    nginx -c $DEPLOYROOT/conf/nginx.conf -s reload
 else
-    echo "TODO: restart nginx"
+    echo "TODO: start nginx"
 fi
 
 # If node is up and running...
