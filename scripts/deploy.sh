@@ -56,7 +56,7 @@ fi
 
 # Wipe out each of the config files with the Mustached versions:
 for FILE in `ls conf/`; do
-    mustache conf/prod.yml conf/$FILE > $DEPLOYROOT/conf/$FILE
+    mustache conf/debug.yml conf/$FILE > $DEPLOYROOT/conf/$FILE
 done
 
 ################################################################################

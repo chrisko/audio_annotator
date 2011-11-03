@@ -1,0 +1,10 @@
+---
+rootdir: "/var/languishes"
+
+hostname: "localhost"
+listen_port: 8080
+nginx_version: "1.0.9"
+www_redirect: false
+
+jenkins_on: false
+---

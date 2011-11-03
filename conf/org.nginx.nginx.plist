@@ -10,13 +10,13 @@
     <true/>
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/local/Cellar/nginx/{{ nginx_version }}/sbin/nginx</string>
+        <string>/usr/local/Cellar/nginx/{{nginx_version}}/sbin/nginx</string>
         <string>-g</string>
         <string>daemon off;</string>
         <string>-c</string>
-        <string>{{ rootdir }}/conf/nginx.conf</string>
+        <string>{{rootdir}}/conf/nginx.conf</string>
     </array>
     <key>WorkingDirectory</key>
-    <string>{{ rootdir }}/html</string>
+    <string>{{rootdir}}/html</string>
   </dict>
 </plist>
