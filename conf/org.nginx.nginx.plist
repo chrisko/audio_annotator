@@ -17,6 +17,6 @@
         <string>{{rootdir}}/conf/nginx.conf</string>
     </array>
     <key>WorkingDirectory</key>
-    <string>{{rootdir}}/html</string>
+    <string>{{rootdir}}/site</string>
   </dict>
 </plist>

@@ -17,16 +17,18 @@
     // Via https://github.com/jwagener/recorder.js/blob/master/examples/example-2.html
     function timecode(ms) {
         var hms = {
-            h: Math.floor(ms/(60*60*1000)),
-            m: Math.floor((ms/60000) % 60),
-            s: Math.floor((ms/1000) % 60)
+            h: Math.floor(ms / (60 * 60 * 1000)),
+            m: Math.floor((ms / 60000) % 60),
+            s: Math.floor((ms / 1000) % 60),
+           ms: Math.floor(ms % 1000)
         };
-        var tc = []; // Timecode array to be joined with '.'
+        var tc = [];  // Timecode array to be joined with '.'
         if (hms.h > 0) {
             tc.push(hms.h);
         }
         tc.push((hms.m < 10 && hms.h > 0 ? "0" + hms.m : hms.m));
         tc.push((hms.s < 10  ? "0" + hms.s : hms.s));
+        tc.push(hms.ms);
         return tc.join(':');
     }
 
@@ -37,7 +39,7 @@
     function record() {
         Recorder.record({
             progress: function (ms) {
-                $("#time").innerHTML = timecode(milliseconds);
+                $("#time").html(timecode(ms));
             }
         });
     }
@@ -46,7 +48,7 @@
         Recorder.stop();
         Recorder.play({
             progress: function (ms) {
-                $("#time").innerHTML = timecode(milliseconds);
+                $("#time").html(timecode(ms));
             }
         });
     }
@@ -68,7 +70,7 @@
     <a href="javascript:stop()" id="stop">Stop</a>
   </div>
 
-  <span id="time">0:00</span>
+  <span id="time">0:00:000</span>
 </body>
 
 </html>

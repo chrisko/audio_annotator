@@ -1,6 +1,6 @@
 #!/bin/zsh -e
 # Build test script, to be run by Jenkins to make sure all our configs are
-# sane and all files check out okay, before replacing the production config.
+# sane and all files check out okay with what we expect.
 
 ################################################################################
 # First, make sure ngircd is in our PATH, so we can test its config:
@@ -33,6 +33,3 @@ if [[ $? -ne 0 ]]; then
     echo "Cannot find mustache on your PATH. Try gem install mustache."
     exit 1
 fi
-
-# Last step, prepare the deploy.sh script by running our template over it.
-#mustache conf/prod.yml scripts/deploy.sh > scripts/prod_deploy.sh

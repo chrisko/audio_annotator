@@ -12,12 +12,12 @@ USAGE="usage: $0 [debug|prod]"
 # Get the target environment (test or prod) information:
 TARGETENV=$1
 [[ -z "$1" ]] && TARGETENV=debug
+echo "Deploying to $TARGETENV..."
 
 ENVCONFIG=./conf/$TARGETENV.yml
 # Read the target environment's config file, for where to deploy to:
 [[ ! -d ./conf/ ]] && { echo "Can't find ./conf/ directory."; exit 1; }
 [[ ! -e $ENVCONFIG ]] && { echo "Can't find $ENVCONFIG."; exit 1; }
-
 if [[ `grep "^rootdir: " $ENVCONFIG | wc -l | awk '{print $1}'` -eq 0 ]]; then
     echo "$ENVCONFIG doesn't seem to specify a rootdir parameter."
     exit 1
@@ -90,9 +90,10 @@ if [[ -e $DEPLOYROOT/run/nginx.pid ]]; then
     fi
 
     NGINXPID=`cat $DEPLOYROOT/run/nginx.pid`
-    echo "nginx is running under process $NGINXPID"
+    echo "nginx is running under process $NGINXPID. Reloading..."
     nginx -c $DEPLOYROOT/conf/nginx.conf -s reload
 else
+    #nginx -c $DEPLOYROOT/conf/nginx.conf -s start  # TODO Do through launchctl.
     echo "TODO: start nginx"
 fi
 
