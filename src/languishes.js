@@ -1,9 +1,10 @@
 #!/usr/local/bin/node
 
 var express = require("express"),
-    formidable = require("formidable");
+    formidable = require("formidable"),
+    wav = require("./wav.js");
 
-var languishes = module.exports = express.createServer();
+var languishes = express.createServer();
 
 languishes.configure(function() {
     // Ordering here matters. The request is passed along.
@@ -12,7 +13,6 @@ languishes.configure(function() {
     // form, or JSON data) and store the parameters is req.body.
     languishes.use(express.bodyParser());
 
-    //languishes.use(express.methodOverride());
     languishes.use(express.logger({ format: ':method :url' }));
     languishes.use(express.static(__dirname + "/static/"));
 });
@@ -28,21 +28,35 @@ languishes.configure("prod", function() {
     // TODO: Cache.
 });
 
+var min_header_size = 16;
+
+function parse_riff(files) {
+    file = files["your_file"];
+    console.log("Opening %s...", file.path);
+    require("fs").readFile(file.path, function (err, data) {
+        if (err) throw err;
+        wav_file = wav.parse_wav(data);
+    });
+}
+
 languishes.post("/upload", function (req, res) {
     //console.log(req);
     //res.redirect("back");
 
     // Use Felix Geisendörfer's "formidable" to handle multipart uploads:
     var form = new formidable.IncomingForm();
+    form.uploadDir = __dirname + "/../data/new/";
+    form.keepExtensions = true;
+
     form.parse(req, function(err, fields, files) {
       res.writeHead(200, {'content-type': 'text/plain'});
       res.write('received upload:\n\n');
       res.end(require("sys").inspect({fields: fields, files: files}));
-      console.log(require("sys").inspect({fields: fields, files: files}));
+
+      parse_riff(files);
     });
 });
 
 languishes.listen(3000);
-console.log("Serving content from %s/static/", __dirname);
 console.log("Express server listening on port %d in %s mode",
             languishes.address().port, languishes.settings.env);
