@@ -58,9 +58,11 @@ languishes.get("/file/:id", function (req, res) {
             require("fs").readFile(filename, function (err, data) {
                 if (err) throw err;
                 wav_file = wav.parse_wav(data);
-                res.write(require("util").inspect(wav_file.header) + "\n");
-                res.write(require("util").inspect(wav_file.format) + "\n");
-                res.end(require("util").inspect(wav_file.data) + "\n");
+                for (field in wav_file) {
+                    if (field == "raw_data") continue;
+                    res.write(field + ": " + require("util").inspect(wav_file[field]) + "\n");
+                }
+                res.end();
             });
         }
     });

@@ -23,47 +23,45 @@ var RIFF_HEADER_FORMAT = [
     { format: { type: "char[4]"  } }
 ];
 
-function parse_riff_header(intermediary) {
+function parse_riff_header(wav) {
     // Make sure the raw_data's defined, and default parsed_so_far to 0.
-    assert.notEqual(typeof intermediary.raw_data, "undefined");
-    intermediary.parsed_so_far = intermediary.parsed_so_far || 0;
+    assert.notEqual(typeof wav.raw_data, "undefined");
+    wav.parsed_so_far = wav.parsed_so_far || 0;
 
-    var bytes_left = intermediary.raw_data.length - intermediary.parsed_so_far;
+    var bytes_left = wav.raw_data.length - wav.parsed_so_far;
     if (bytes_left < RIFF_HEADER_SIZE) {
-        intermediary.error = "Remaining space (" + bytes_left + " bytes)"
-                           + " won't accommodate the " + RIFF_HEADER_SIZE
-                           + "-byte RIFF header.";
-        return false;
+        throw { name: "RIFF Header Parsing Error",
+             message: "Remaining space (" + bytes_left + " bytes)"
+                    + " won't accommodate the " + RIFF_HEADER_SIZE
+                    + "-byte RIFF header." };
     }
 
     var parser = new ctype.Parser({ endian: "little" });
-    intermediary.header = parser.readData(RIFF_HEADER_FORMAT,
-                                          intermediary.raw_data,
-                                          intermediary.parsed_so_far);
-    intermediary.parsed_so_far += RIFF_HEADER_SIZE;
+    wav.header = parser.readData(RIFF_HEADER_FORMAT,
+                                          wav.raw_data,
+                                          wav.parsed_so_far);
+    wav.parsed_so_far += RIFF_HEADER_SIZE;
 
     // Make sure the id field matches "RIFF", the container format we expect.
-    if (intermediary.header.id.toString("ascii") == RIFF_HEADER_ID) {
-        intermediary.header.id = RIFF_HEADER_ID;
+    if (wav.header.id.toString("ascii") == RIFF_HEADER_ID) {
+        wav.header.id = RIFF_HEADER_ID;
     } else {
-        intermediary.error = "The first four bytes ("
-                           + bufstring(intermediary.header.id)
-                           + ") don't match what's required for the WAV format,"
-                           + " \"" + RIFF_HEADER_ID + "\".";
-        return false;
+        throw { name: "RIFF Header Parsing Error",
+             message: "The first four bytes ("
+                    + bufstring(wav.header.id)
+                    + ") don't match what's required for the WAV format,"
+                    + " \"" + RIFF_HEADER_ID + "\"." };
     }
 
     // Also ensure the format is "WAVE" and not something else.
-    if (intermediary.header.format.toString("ascii") == RIFF_FORMAT_WAV) {
-        intermediary.header.format = RIFF_FORMAT_WAV;
+    if (wav.header.format.toString("ascii") == RIFF_FORMAT_WAV) {
+        wav.header.format = RIFF_FORMAT_WAV;
     } else {
-        intermediary.error = "The RIFF file format identifier string ("
-                           + bufstring(intermediary.header.format)
-                           + ") doesn't match \"" + RIFF_FORMAT_WAV + "\".";
-        return false;
+        throw { name: "RIFF Header Parsing Error",
+             message: "The RIFF file format identifier string ("
+                    + bufstring(wav.header.format)
+                    + ") doesn't match \"" + RIFF_FORMAT_WAV + "\"." };
     }
-
-    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,54 +80,52 @@ var WAV_FMT_CHUNK_FORMAT = [
     { bits_per_sample: { type: "uint16_t" } }   // Typically 16 bits.
 ];
 
-function parse_wav_fmt(intermediary) {
+function parse_wav_fmt(wav) {
     // Make sure the raw_data's defined, and default parsed_so_far to 0.
-    assert.notEqual(typeof intermediary.raw_data, "undefined");
-    intermediary.parsed_so_far = intermediary.parsed_so_far || 0;
+    assert.notEqual(typeof wav.raw_data, "undefined");
+    wav.parsed_so_far = wav.parsed_so_far || 0;
 
-    var bytes_left = intermediary.raw_data.length - intermediary.parsed_so_far;
+    var bytes_left = wav.raw_data.length - wav.parsed_so_far;
     if (bytes_left < WAV_FMT_CHUNK_MIN_PCM_SIZE) {
-        intermediary.error = "Remaining space (" + bytes_left + " bytes)"
-                           + " can't accommodate a PCM WAV FMT chunk ("
-                           + WAV_FMT_CHUNK_MIN_PCM_SIZE + " bytes).";
-        return false;
+        throw { name: "WAV FMT Parsing Error",
+             message: "Remaining space (" + bytes_left + " bytes)"
+                    + " can't accommodate a PCM WAV FMT chunk ("
+                    + WAV_FMT_CHUNK_MIN_PCM_SIZE + " bytes)." };
     }
 
     var parser = new ctype.Parser({ endian: "little" });
-    intermediary.format = parser.readData(WAV_FMT_CHUNK_FORMAT,
-                                          intermediary.raw_data,
-                                          intermediary.parsed_so_far);
-    intermediary.parsed_so_far += WAV_FMT_CHUNK_MIN_PCM_SIZE;
+    wav.format = parser.readData(WAV_FMT_CHUNK_FORMAT,
+                                          wav.raw_data,
+                                          wav.parsed_so_far);
+    wav.parsed_so_far += WAV_FMT_CHUNK_MIN_PCM_SIZE;
 
     // Make sure the id, which begins this section, matches "FMT ":
-    if (intermediary.format.id.toString("ascii") == WAV_FMT_ID) {
-        intermediary.format.id = WAV_FMT_ID;
+    if (wav.format.id.toString("ascii") == WAV_FMT_ID) {
+        wav.format.id = WAV_FMT_ID;
     } else {
-        intermediary.error = "The WAV FMT chunk begins with \""
-                           + bufstring(intermediary.format.id)
-                           + "\", instead of \"" + WAV_FMT_ID + "\".";
-        return false;
+        throw { name: "WAV FMT Parsing Error",
+             message: "The WAV FMT chunk begins with \""
+                    + bufstring(wav.format.id)
+                    + "\", instead of \"" + WAV_FMT_ID + "\"." };
     }
 
     // Calculate the block align and byte rate from the other fields,
     // to make sure everything lines up as we'd expect it to:
-    var fmt = intermediary.format;
+    var fmt = wav.format;
     var calculated_block_align = fmt.num_channels * (fmt.bits_per_sample / 8);
     var calculated_byte_rate = fmt.sample_rate * calculated_block_align;
     if (fmt.block_align !== calculated_block_align) {
-        intermediary.error = "Calculated WAV block align value ("
-                           + calculated_block_align + ") doesn't match the "
-                           + "given value of " + fmt.block_align + ".";
-        return false;
+        throw { name: "WAV FMT Parsing Error",
+             message: "Calculated WAV block align value ("
+                    + calculated_block_align + ") doesn't match the "
+                    + "given value of " + fmt.block_align + "." };
     }
     if (fmt.byte_rate !== calculated_byte_rate) {
-        intermediary.error = "Calculated WAV byte rate (" + calculated_byte_rate
-                           + ") doesn't match the given byte rate, "
-                           + fmt.byte_rate + ".";
-        return false;
+        throw { name: "WAV FMT Parsing Error",
+             message: "Calculated WAV byte rate (" + calculated_byte_rate
+                    + ") doesn't match the given byte rate, "
+                    + fmt.byte_rate + "." };
     }
-
-    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -142,66 +138,75 @@ var WAV_DATA_CHUNK_FORMAT = [
     { size: { type: "uint32_t" } }
 ];
 
-function parse_wav_data(intermediary) {
+function parse_wav_data(wav) {
     // Make sure the raw_data's defined, and default parsed_so_far to 0.
-    assert.notEqual(typeof intermediary.raw_data, "undefined");
-    intermediary.parsed_so_far = intermediary.parsed_so_far || 0;
+    assert.notEqual(typeof wav.raw_data, "undefined");
+    wav.parsed_so_far = wav.parsed_so_far || 0;
 
-    var bytes_left = intermediary.raw_data.length - intermediary.parsed_so_far;
+    var bytes_left = wav.raw_data.length - wav.parsed_so_far;
     if (bytes_left < WAV_DATA_CHUNK_MIN_SIZE) {
-        intermediary.error = "Remaining space (" + bytes_left + " bytes)"
-                           + " won't accommodate any WAV DATA chunk (minimum "
-                           + WAV_DATA_CHUNK_MIN_SIZE + " bytes).";
-        return false;
+        throw { name: "WAV DATA Parsing Error",
+             message: "Remaining space (" + bytes_left + " bytes)"
+                    + " won't accommodate any WAV DATA chunk (minimum "
+                    + WAV_DATA_CHUNK_MIN_SIZE + " bytes)." };
     }
 
     var parser = new ctype.Parser({ endian: "little" });
-    intermediary.data = parser.readData(WAV_DATA_CHUNK_FORMAT,
-                                        intermediary.raw_data,
-                                        intermediary.parsed_so_far);
-    intermediary.parsed_so_far += WAV_DATA_CHUNK_MIN_SIZE;
+    wav.data = parser.readData(WAV_DATA_CHUNK_FORMAT,
+                                        wav.raw_data,
+                                        wav.parsed_so_far);
+    wav.parsed_so_far += WAV_DATA_CHUNK_MIN_SIZE;
 
     // Make sure the id, which begins this section, matches "DATA":
-    if (intermediary.data.id.toString("ascii") == WAV_DATA_ID) {
-        intermediary.data.id = WAV_DATA_ID;
+    if (wav.data.id.toString("ascii") == WAV_DATA_ID) {
+        wav.data.id = WAV_DATA_ID;
     } else {
-        intermediary.error = "The WAV DATA chunk begins with \""
-                           + bufstring(intermediary.data.id)
-                           + "\", instead of \"" + WAV_DATA_ID + "\".";
-        return false;
+        throw { name: "WAV DATA Parsing Error",
+             message: "The WAV DATA chunk begins with \""
+                    + bufstring(wav.data.id)
+                    + "\", instead of \"" + WAV_DATA_ID + "\"." };
     }
 
-    bytes_left = intermediary.raw_data.length - intermediary.parsed_so_far;
-    if (bytes_left < intermediary.data.size) {
-        intermediary.error = "The WAV DATA header specifies a size ("
-                           + intermediary.data.size + " bytes) that's greater "
-                           + "than the remaining bytes in the buffer ("
-                           + bytes_left + ").";
-        return false;
+    bytes_left = wav.raw_data.length - wav.parsed_so_far;
+    if (bytes_left < wav.data.size) {
+        throw { name: "WAV DATA Parsing Error",
+             message: "The WAV DATA header specifies a size ("
+                    + wav.data.size + " bytes) that's greater "
+                    + "than the remaining bytes in the buffer ("
+                    + bytes_left + ")." };
     }
 
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Timing Calculations /////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+function calculate_timing(wav) {
+    assert.ok(typeof wav.header !== "undefined");
+    assert.ok(typeof wav.format !== "undefined");
+    assert.ok(typeof wav.data !== "undefined");
+
+    wav.num_samples = wav.data.size / (wav.format.bits_per_sample / 8);
+    wav.sample_duration = 1.0 / wav.format.sample_rate;
+    wav.duration = wav.num_samples / wav.format.sample_rate;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // The Actual Parse Method /////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 function parse_wav(data) {
-    var intermediary = { raw_data: data, parsed_so_far: 0 };
+    var wav = { raw_data: data, parsed_so_far: 0 };
 
-    // Parse the RIFF header, the FMT subchunk, and the DATA subchunk. If any
-    // error occurs, these will return false (breaking the chain) and store an
-    // error message in the intermediary object.
-    parse_riff_header(intermediary)
-        && parse_wav_fmt(intermediary)
-        && parse_wav_data(intermediary);
+    // Parse the RIFF header, the FMT subchunk, and the DATA subchunk. Any of
+    // these may throw, if there was a parsing error, or if something looks off.
+    parse_riff_header(wav);
+    parse_wav_fmt(wav);
+    parse_wav_data(wav);
 
-    // If one of them broke off with an error message
-    if (intermediary.error) {
-        throw new Error(intermediary.error);
-    }
+    calculate_timing(wav);
 
-    return intermediary;  // TODO Cut some of the fields, improve a bit.
+    return wav;  // TODO Cut some of the fields, improve a bit.
 }
 
 // Export the parse_wav method to client modules:
