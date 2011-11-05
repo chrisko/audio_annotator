@@ -28,16 +28,26 @@ languishes.configure("prod", function() {
     // TODO: Cache.
 });
 
-var min_header_size = 16;
+languishes.get("/file/:id", function (req, res) {
+    console.log(req.params.id);
+    var filename = __dirname + "/../data/new/" + req.params.id + ".wav";
+    require("path").exists(filename, function (exists) {
+        if (!exists) {
+            res.writeHead(404, {"content-type": "text/plain"});
+            res.end("No such file: " + filename)
+        } else {
+            res.writeHead(200, {"content-type": "text/plain"});
 
-function parse_riff(files) {
-    file = files["your_file"];
-    console.log("Opening %s...", file.path);
-    require("fs").readFile(file.path, function (err, data) {
-        if (err) throw err;
-        wav_file = wav.parse_wav(data);
+            require("fs").readFile(filename, function (err, data) {
+                if (err) throw err;
+                wav_file = wav.parse_wav(data);
+                res.write(require("util").inspect(wav_file.header) + "\n");
+                res.write(require("util").inspect(wav_file.format) + "\n");
+                res.end(require("util").inspect(wav_file.data) + "\n");
+            });
+        }
     });
-}
+});
 
 languishes.post("/upload", function (req, res) {
     //console.log(req);
@@ -49,11 +59,16 @@ languishes.post("/upload", function (req, res) {
     form.keepExtensions = true;
 
     form.parse(req, function(err, fields, files) {
-      res.writeHead(200, {'content-type': 'text/plain'});
-      res.write('received upload:\n\n');
-      res.end(require("sys").inspect({fields: fields, files: files}));
+        res.writeHead(200, {'content-type': 'text/plain'});
+        res.write('received upload:\n\n');
+        res.end(require("sys").inspect({fields: fields, files: files}));
 
-      parse_riff(files);
+        file = files["your_file"];
+        require("fs").readFile(file.path, function (err, data) {
+            if (err) throw err;
+            wav_file = wav.parse_wav(data);
+        });
+        parse_riff(files);
     });
 });
 
