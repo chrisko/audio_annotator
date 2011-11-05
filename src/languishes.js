@@ -28,8 +28,25 @@ languishes.configure("prod", function() {
     // TODO: Cache.
 });
 
+languishes.get("/files", function (req, res) {
+    require("fs").readdir(__dirname + "/../data/new/", function (err, files) {
+        if (err) {
+            res.writeHead(500, {"content-type": "text/plain"});
+            res.end("Server error: " + err);
+            throw err;
+        }
+
+        res.writeHead(200, {"content-type": "text/html"});
+        res.write("<html><body>");
+        for (i in files) {
+            var basename = require("path").basename(files[i], ".wav");
+            res.write("<a href=\"file/" + basename + "\">" + basename + "</a><br>");
+        }
+        res.end("</body></html>");
+    });
+});
+
 languishes.get("/file/:id", function (req, res) {
-    console.log(req.params.id);
     var filename = __dirname + "/../data/new/" + req.params.id + ".wav";
     require("path").exists(filename, function (exists) {
         if (!exists) {
@@ -68,7 +85,6 @@ languishes.post("/upload", function (req, res) {
             if (err) throw err;
             wav_file = wav.parse_wav(data);
         });
-        parse_riff(files);
     });
 });
 

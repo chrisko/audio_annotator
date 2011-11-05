@@ -189,10 +189,14 @@ function parse_wav_data(intermediary) {
 function parse_wav(data) {
     var intermediary = { raw_data: data, parsed_so_far: 0 };
 
+    // Parse the RIFF header, the FMT subchunk, and the DATA subchunk. If any
+    // error occurs, these will return false (breaking the chain) and store an
+    // error message in the intermediary object.
     parse_riff_header(intermediary)
         && parse_wav_fmt(intermediary)
         && parse_wav_data(intermediary);
 
+    // If one of them broke off with an error message
     if (intermediary.error) {
         throw new Error(intermediary.error);
     }
