@@ -4,6 +4,9 @@ var express = require("express"),
     formidable = require("formidable"),
     wav = require("./wav.js");
 
+////////////////////////////////////////////////////////////////////////////////
+// Express Configuration ///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 var languishes = express.createServer();
 
 languishes.configure(function() {
@@ -28,6 +31,9 @@ languishes.configure("prod", function() {
     // TODO: Cache.
 });
 
+////////////////////////////////////////////////////////////////////////////////
+// Request Handling Methods ////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 languishes.get("/files", function (req, res) {
     require("fs").readdir(__dirname + "/../data/new/", function (err, files) {
         if (err) {
@@ -68,6 +74,19 @@ languishes.get("/file/:id", function (req, res) {
     });
 });
 
+languishes.get("/file/:id/view", function (req, res) {
+    var filename = __dirname + "/../data/new/" + req.params.id + ".wav";
+    require("path").exists(filename, function (exists) {
+        if (!exists) {
+            res.writeHead(404, {"content-type": "text/plain"});
+            res.end("No such file: " + filename)
+        } else {
+            res.writeHead(200, {"content-type": "text/html"});
+            res.end("TODO");
+        }
+    });
+});
+
 languishes.post("/upload", function (req, res) {
     //console.log(req);
     //res.redirect("back");
@@ -79,8 +98,7 @@ languishes.post("/upload", function (req, res) {
 
     form.parse(req, function(err, fields, files) {
         res.writeHead(200, {'content-type': 'text/plain'});
-        res.write('received upload:\n\n');
-        res.end(require("sys").inspect({fields: fields, files: files}));
+        res.end(require("util").inspect({fields: fields, files: files}));
 
         file = files["your_file"];
         require("fs").readFile(file.path, function (err, data) {
@@ -90,6 +108,9 @@ languishes.post("/upload", function (req, res) {
     });
 });
 
+////////////////////////////////////////////////////////////////////////////////
+// Server Startup //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 languishes.listen(3000);
 console.log("Express server listening on port %d in %s mode",
             languishes.address().port, languishes.settings.env);

@@ -1,15 +1,12 @@
+// Chris Koenig <ckoenig@seas.upenn.edu>
+// CIS-400 Senior Design Project
+
+// WAV audio file parsing library. Based on WAVE PCM format:
 // https://ccrma.stanford.edu/courses/422/projects/WaveFormat
 
 var assert = require("assert"),
-    ctype = require("ctype");
-
-// Convenience method for some of the error messages below.
-function bufstring(buffer) {
-    var chars = [ ];
-    for (var i = 0; i < buffer.length; i++)
-        chars.push(buffer[i]);
-    return chars.join(" ");
-}
+    ctype = require("ctype"),
+    util = require("util");
 
 ////////////////////////////////////////////////////////////////////////////////
 // RIFF Header Parsing /////////////////////////////////////////////////////////
@@ -38,8 +35,8 @@ function parse_riff_header(wav) {
 
     var parser = new ctype.Parser({ endian: "little" });
     wav.header = parser.readData(RIFF_HEADER_FORMAT,
-                                          wav.raw_data,
-                                          wav.parsed_so_far);
+                                 wav.raw_data,
+                                 wav.parsed_so_far);
     wav.parsed_so_far += RIFF_HEADER_SIZE;
 
     // Make sure the id field matches "RIFF", the container format we expect.
@@ -48,18 +45,18 @@ function parse_riff_header(wav) {
     } else {
         throw { name: "RIFF Header Parsing Error",
              message: "The first four bytes ("
-                    + bufstring(wav.header.id)
+                    + util.inspect(wav.header.id)
                     + ") don't match what's required for the WAV format,"
                     + " \"" + RIFF_HEADER_ID + "\"." };
     }
 
-    // Also ensure the format is "WAVE" and not something else.
+    // Also ensure that the format is "WAVE" and not something else.
     if (wav.header.format.toString("ascii") == RIFF_FORMAT_WAV) {
         wav.header.format = RIFF_FORMAT_WAV;
     } else {
         throw { name: "RIFF Header Parsing Error",
              message: "The RIFF file format identifier string ("
-                    + bufstring(wav.header.format)
+                    + util.inspect(wav.header.format)
                     + ") doesn't match \"" + RIFF_FORMAT_WAV + "\"." };
     }
 }
@@ -105,7 +102,7 @@ function parse_wav_fmt(wav) {
     } else {
         throw { name: "WAV FMT Parsing Error",
              message: "The WAV FMT chunk begins with \""
-                    + bufstring(wav.format.id)
+                    + util.inspect(wav.format.id)
                     + "\", instead of \"" + WAV_FMT_ID + "\"." };
     }
 
@@ -163,7 +160,7 @@ function parse_wav_data(wav) {
     } else {
         throw { name: "WAV DATA Parsing Error",
              message: "The WAV DATA chunk begins with \""
-                    + bufstring(wav.data.id)
+                    + util.inspect(wav.data.id)
                     + "\", instead of \"" + WAV_DATA_ID + "\"." };
     }
 
@@ -183,17 +180,20 @@ function parse_wav_data(wav) {
 // Timing Calculations /////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 function calculate_timing(wav) {
+    // Make sure the three chunks have been parsed out successfully:
     assert.ok(typeof wav.header !== "undefined");
     assert.ok(typeof wav.format !== "undefined");
     assert.ok(typeof wav.data !== "undefined");
 
+    // And calculate the number of samples, the sample duration in seconds, and
+    // the total clip duration in seconds from the fields we've already parsed:
     wav.num_samples = wav.data.size / (wav.format.bits_per_sample / 8);
     wav.sample_duration = 1.0 / wav.format.sample_rate;
     wav.duration = wav.num_samples / wav.format.sample_rate;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// The Actual Parse Method /////////////////////////////////////////////////////
+// Putting It All Together /////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 function parse_wav(data) {
     var wav = { raw_data: data, parsed_so_far: 0 };
@@ -206,8 +206,11 @@ function parse_wav(data) {
 
     calculate_timing(wav);
 
-    return wav;  // TODO Cut some of the fields, improve a bit.
+    return wav;  // TODO Cut some of the fields, document the output.
 }
 
-// Export the parse_wav method to client modules:
-exports.parse_wav = parse_wav;
+// All this module needs to export is the parse_wav method.
+// Make sure we're running in Node, though, and not in the browser.
+if (typeof exports !== "undefined") {
+    exports.parse_wav = parse_wav;
+}
