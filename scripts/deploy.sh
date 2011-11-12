@@ -10,21 +10,9 @@ USAGE="usage: $0 [debug|prod]"
 [[ ! -z "$2" ]] && { echo $USAGE; exit 1; }
 
 # Get the target environment (test or prod) information:
-TARGETENV=$1
-[[ -z "$1" ]] && TARGETENV=debug
-echo "Deploying to $TARGETENV..."
-
-ENVCONFIG=./conf/$TARGETENV.yml
-# Read the target environment's config file, for where to deploy to:
-[[ ! -d ./conf/ ]] && { echo "Can't find ./conf/ directory."; exit 1; }
-[[ ! -e $ENVCONFIG ]] && { echo "Can't find $ENVCONFIG."; exit 1; }
-if [[ `grep "^rootdir: " $ENVCONFIG | wc -l | awk '{print $1}'` -eq 0 ]]; then
-    echo "$ENVCONFIG doesn't seem to specify a rootdir parameter."
-    exit 1
-fi
-
-# And now extract that rootdir parameter from the environment config:
-DEPLOYROOT=`grep "^rootdir: " $ENVCONFIG | sed "s/^rootdir: \"\(.*\)\"$/\1/"`
+DEPLOYROOT=$1
+[[ -z "$1" ]] && DEPLOYROOT=/var/languishes
+echo "Deploying to directory $DEPLOYROOT..."
 
 ################################################################################
 ## Check or create the deployment directories ##################################
@@ -82,23 +70,8 @@ done
 ################################################################################
 ## Restart the running processes ###############################################
 ################################################################################
-# If nginx is running (check for a .pid file), send it a HUP to reload config:
-if [[ -e $DEPLOYROOT/run/nginx.pid ]]; then
-    if [[ `wc -l $DEPLOYROOT/run/nginx.pid | awk '{print $1}'` -ne 1 ]]; then
-        echo "$DEPLOYROOT/run/nginx.pid needs to have exactly one line."
-        exit 1
-    fi
-
-    NGINXPID=`cat $DEPLOYROOT/run/nginx.pid`
-    echo "nginx is running under process $NGINXPID. Reloading..."
-    nginx -c $DEPLOYROOT/conf/nginx.conf -s reload
-else
-    #nginx -c $DEPLOYROOT/conf/nginx.conf -s start  # TODO Do through launchctl.
-    echo "TODO: start nginx"
-fi
-
 # If node is up and running...
-if [[ -e $DEPLOYROOT/run/node.pid ]]; then
+if [[ -e $DEPLOYROOT/run/languishes.pid ]]; then
     if [[ ! `wc -l $DEPLOYROOT/run/node.pid` -eq 1 ]]; then
         echo "$DEPLOYROOT/run/node.pid needs to have exactly one line."
         exit 1
