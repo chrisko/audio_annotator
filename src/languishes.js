@@ -1,7 +1,10 @@
 #!/usr/local/bin/node
+// Chris Koenig <ckoenig@seas.upenn.edu>
+// CIS-400 Senior Design Project
 
 var express = require("express"),
     formidable = require("formidable"),
+    util = require("util"),
     wav = require("./wav.js");
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,6 +37,15 @@ languishes.configure("prod", function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Request Handling Methods ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+languishes.get("/", function (req, res) {
+    res.writeHead(200, {"content-type": "text/html"});
+    res.write("<html><head><title>languishes.net</title></head>\n");
+    res.write("<body><a href=\"/files\">files</a><br>\n");
+    res.write("<a href=\"/record.html\">record</a><br>\n");
+    res.write("</body></html>")
+    res.end();
+});
+
 languishes.get("/files", function (req, res) {
     require("fs").readdir(__dirname + "/../data/new/", function (err, files) {
         if (err) {
@@ -46,7 +58,8 @@ languishes.get("/files", function (req, res) {
         res.write("<html><body>");
         for (i in files) {
             var basename = require("path").basename(files[i], ".wav");
-            res.write("<a href=\"file/" + basename + "\">" + basename + "</a><br>");
+            res.write("<a href=\"file/" + basename + "\">"
+                      + basename + "</a><br>");
         }
         res.end("</body></html>");
     });
@@ -60,13 +73,12 @@ languishes.get("/file/:id", function (req, res) {
             res.end("No such file: " + filename)
         } else {
             res.writeHead(200, {"content-type": "text/plain"});
-
             require("fs").readFile(filename, function (err, data) {
                 if (err) throw err;
                 wav_file = wav.parse_wav(data);
                 for (field in wav_file) {
                     if (field == "raw_data") continue;
-                    res.write(field + ": " + require("util").inspect(wav_file[field]) + "\n");
+                    res.write(field + ": " + util.inspect(wav_file[field]) + "\n");
                 }
                 res.end();
             });
@@ -87,20 +99,43 @@ languishes.get("/file/:id/view", function (req, res) {
     });
 });
 
+////////////////////////////////////////////////////////////////////////////////
+// Uploading Clips /////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+var DATA_DIR = __dirname + "/../data/"
+var NEW_UPLOADS_DIR = DATA_DIR + "new/";
+
+function import_new_upload(new_filename) {
+    // We'll piece this SHA-1 sum together as data streams in:
+    var sha1sum = require("crypto").createHash("sha1");
+
+    // Open the newly-uploaded file
+    var stream = require("fs").ReadStream(new_filename);
+    stream.on("data", function (data) {
+        sha1sum.update(data);
+    });
+
+    stream.on("end", function () {
+        var hexsum = sha1sum.digest("hex");
+        console.log(hexsum + " " + new_filename);
+    });
+}
+
 languishes.post("/upload", function (req, res) {
     //console.log(req);
     //res.redirect("back");
 
     // Use Felix Geisendörfer's "formidable" to handle multipart uploads:
     var form = new formidable.IncomingForm();
-    form.uploadDir = __dirname + "/../data/new/";
+    form.uploadDir = NEW_UPLOADS_DIR;
     form.keepExtensions = true;
 
     form.parse(req, function(err, fields, files) {
         res.writeHead(200, {'content-type': 'text/plain'});
-        res.end(require("util").inspect({fields: fields, files: files}));
+        res.end(util.inspect({fields: fields, files: files}));
 
         file = files["your_file"];
+        import_new_upload(file.path);
         require("fs").readFile(file.path, function (err, data) {
             if (err) throw err;
             wav_file = wav.parse_wav(data);

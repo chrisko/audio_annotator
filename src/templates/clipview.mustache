@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="author" content="Chris Koenig" />
+</head>
+
+<body>
+
+  <!-- Include jQuery from Media Temple's jQuery CDN -->
+  <script src="http://code.jquery.com/jquery-1.6.4.js"></script>
+
+  <script src="{{scriptdir}}/waveform.js"></script>
+
+  <center><div id="waveform"></div></center>
+
+  <script type="text/javascript" charset="utf-8">
+      "use strict";
+
+      window.onload = function () {
+          var clipid = "{{clipid}}";
+          waveform.draw();
+  </script>
+</body>
+
+</html>
