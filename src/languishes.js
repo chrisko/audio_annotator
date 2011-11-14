@@ -3,8 +3,11 @@
 // CIS-400 Senior Design Project
 
 var config = require("config"),
+    crypto = require("crypto"),
     express = require("express"),
+    fs = require("fs"),
     formidable = require("formidable"),
+    path = require("path"),
     util = require("util"),
     wav = require("./wav.js");
 
@@ -14,8 +17,16 @@ var config = require("config"),
 var languishes = express.createServer();
 
 languishes.configure(function() {
-    // Ordering here matters. The request is passed along.
+    languishes.set("views", config.files.root_dir + "src/views/");
 
+    // Use mustache templating for .html files, via the stache module.
+    languishes.set("view engine", "mustache");
+    languishes.register(".html", require("stache"));
+
+    // Set default view options, that we won't have to pass in every time:
+    languishes.set("view options", { layout: false });
+
+    // Ordering here matters. The request is passed along.
     // Parse the request body (which in the case of a POST request may be a
     // form, or JSON data) and store the parameters is req.body.
     languishes.use(express.bodyParser());
@@ -32,7 +43,7 @@ languishes.configure("dev", function() {
 // Production environment config. Don't show too much.
 languishes.configure("prod", function() {
     languishes.use(express.errorHandler());
-    // TODO: Cache.
+    // TODO: languishes.use("view cache") for caching.
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,14 +52,18 @@ languishes.configure("prod", function() {
 languishes.get("/", function (req, res) {
     res.writeHead(200, { "content-type": "text/html" });
     res.write("<html><head><title>languishes.net</title></head>\n");
-    res.write("<body><a href=\"/files\">files</a><br>\n");
+    res.write("<body><a href=\"/clips\">clips</a><br>\n");
     res.write("<a href=\"/record.html\">record</a><br>\n");
     res.write("</body></html>")
     res.end();
 });
 
-languishes.get("/files", function (req, res) {
-    require("fs").readdir(config.files.upload_dir, function (err, files) {
+languishes.get("/record", function (req, res) {
+    res.render("record.html", { });
+});
+
+languishes.get("/clips", function (req, res) {
+    fs.readdir(config.files.upload_dir, function (err, files) {
         if (err) {
             res.writeHead(500, { "content-type": "text/plain" });
             res.end("Server error: " + err);
@@ -58,23 +73,53 @@ languishes.get("/files", function (req, res) {
         res.writeHead(200, { "content-type": "text/html" });
         res.write("<html><body>");
         for (i in files) {
-            var basename = require("path").basename(files[i], ".wav");
-            res.write("<a href=\"file/" + basename + "\">"
-                      + basename + "</a><br>");
+            var basename = path.basename(files[i], ".wav");
+            res.write("<a href=\"clip/" + basename + "\">" + basename + "</a>&nbsp;");
+            res.write("<a href=\"clip/" + basename + "/info\">(info)</a><br>");
         }
         res.end("</body></html>");
     });
 });
 
-languishes.get("/file/:id", function (req, res) {
+languishes.get("/clip/:id", function (req, res) {
     var filename = config.files.upload_dir + req.params.id + ".wav";
-    require("path").exists(filename, function (exists) {
+    path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
             res.end("No such file: " + filename)
         } else {
-            res.writeHead(200, { "content-type": "text/plain" });
-            require("fs").readFile(filename, function (err, data) {
+            fs.stat(filename, function (err, stats) {
+                if (err) {
+                    res.writeHead(500, { "content-type": "text/plain" });
+                    res.end(err); console.log(err); return;
+                }
+
+                // Open a read stream and stream the wav file to the user:
+                stream = fs.createReadStream(filename, { encoding: "binary" });
+                res.writeHead(200, { "content-type": "audio/wav",
+                                     "content-length": stats.size,
+                                     "content-disposition": "inline; filename=" + req.params.id + ".wav" });
+
+                stream.on("error", function (exception) {
+                    console.log(exception);
+                    res.end();  // We already sent the 200 header
+                });
+
+                stream.on("data", function (data) { res.write(data, "binary"); });
+                stream.on("end", function () { res.end(); });
+            });
+        }
+    });
+});
+
+languishes.get("/clip/:id/info", function (req, res) {
+    var filename = config.files.upload_dir + req.params.id + ".wav";
+    path.exists(filename, function (exists) {
+        if (!exists) {
+            res.writeHead(404, { "content-type": "text/plain" });
+            res.end("No such file: " + filename)
+        } else {
+            fs.readFile(filename, function (err, data) {
                 if (err) throw err;
                 wav_file = wav.parse_wav(data);
                 for (field in wav_file) {
@@ -87,15 +132,14 @@ languishes.get("/file/:id", function (req, res) {
     });
 });
 
-languishes.get("/file/:id/view", function (req, res) {
+languishes.get("/clip/:id/view", function (req, res) {
     var filename = config.files.upload_dir + req.params.id + ".wav";
-    require("path").exists(filename, function (exists) {
+    path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
             res.end("No such file: " + filename)
         } else {
-            res.writeHead(200, { "content-type": "text/html" });
-            res.end("TODO");
+            res.render("clipview.html", { "clipid": req.params.id });
         }
     });
 });
@@ -105,10 +149,10 @@ languishes.get("/file/:id/view", function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 function import_new_upload(new_filename) {
     // We'll piece this SHA-1 sum together as data streams in:
-    var sha1sum = require("crypto").createHash("sha1");
+    var sha1sum = crypto.createHash("sha1");
 
     // Open the newly-uploaded file
-    var stream = require("fs").ReadStream(new_filename);
+    var stream = fs.ReadStream(new_filename);
     stream.on("data", function (data) {
         sha1sum.update(data);
     });
@@ -131,7 +175,7 @@ languishes.post("/upload", function (req, res) {
 
         file = files["your_file"];
         import_new_upload(file.path);
-        require("fs").readFile(file.path, function (err, data) {
+        fs.readFile(file.path, function (err, data) {
             if (err) throw err;
             wav_file = wav.parse_wav(data);
         });
