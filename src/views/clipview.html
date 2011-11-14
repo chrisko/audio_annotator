@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <title>{{clipid}}</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="author" content="Chris Koenig" />
+</head>
+
+<body>
+
+  <!-- Include jQuery from Media Temple's jQuery CDN -->
+  <script src="http://code.jquery.com/jquery-1.6.4.js"></script>
+
+  <script src="/waveform.js"></script>
+
+  <center><div id="waveform"></div></center>
+
+  <script type="text/javascript" charset="utf-8">
+      "use strict";
+
+      window.onload = function () {
+          // This clip id, which identifies the audio clip, is something we
+          // drop in via template upon serving the page.
+          var clip_id = "{{clipid}}";
+
+          var clip_info = $.getJSON("/clip/" + clip_id + "/info")
+          .success(function (result) { console.log("info success!"); console.log(result); })
+          .error(function () { console.log("info error."); })
+          .complete(function () { console.log("info complete!"); });
+          //console.log(clip_info);
+
+          var clip_xhr = $.ajax("/clip/" + clip_id)
+          .success(function () { console.log("data success!"); })
+          .error(function () { console.log("data error."); })
+          .complete(function () { console.log("data complete!"); });
+
+          console.log(clip_xhr);
+      };
+  </script>
+</body>
+
+</html>
