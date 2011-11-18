@@ -12,7 +12,6 @@
   <script src="http://code.jquery.com/jquery-1.6.4.js"></script>
 
   <script src="/waveform.js"></script>
-
   <center><div id="waveform"></div></center>
 
   <script type="text/javascript" charset="utf-8">
@@ -25,7 +24,7 @@
 
           var clip_info = $.getJSON("/clip/" + clip_id + "/info")
           .success(function (result) { console.log("info success!"); console.log(result); })
-          .error(function () { console.log("info error."); })
+          .error(function (xhr, err) { console.log("error getting info: " + err); })
           .complete(function () { console.log("info complete!"); });
           //console.log(clip_info);
 

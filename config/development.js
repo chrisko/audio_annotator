@@ -6,8 +6,9 @@ var root = "/Users/ckoenig/src/languishes/";
 // Development environment configuration.
 module.exports = {
     server: {
-        host: "languishes.net",
-        port: 3000
+        host: "localhost",
+        port: 3000,
+        root: "/"
     },
 
     files: {

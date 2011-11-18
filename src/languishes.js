@@ -53,7 +53,7 @@ languishes.get("/", function (req, res) {
     res.writeHead(200, { "content-type": "text/html" });
     res.write("<html><head><title>languishes.net</title></head>\n");
     res.write("<body><a href=\"/clips\">clips</a><br>\n");
-    res.write("<a href=\"/record.html\">record</a><br>\n");
+    res.write("<a href=\"/record\">record</a><br>\n");
     res.write("</body></html>")
     res.end();
 });
@@ -121,12 +121,15 @@ languishes.get("/clip/:id/info", function (req, res) {
         } else {
             fs.readFile(filename, function (err, data) {
                 if (err) throw err;
+
                 wav_file = wav.parse_wav(data);
+                wav_representation = { }
                 for (field in wav_file) {
                     if (field == "raw_data") continue;
-                    res.write(field + ": " + util.inspect(wav_file[field]) + "\n");
+                    wav_representation[field] = wav_file[field];
                 }
-                res.end();
+
+                res.end(JSON.stringify(wav_representation));
             });
         }
     });
