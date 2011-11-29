@@ -11,30 +11,32 @@
   <!-- Include jQuery from Media Temple's jQuery CDN -->
   <script src="http://code.jquery.com/jquery-1.6.4.js"></script>
 
+  <!-- Grab SoundManager2 for the initial visualization -->
+  <script src="/soundmanager2.js"></script>
+
   <script src="/waveform.js"></script>
   <center><div id="waveform"></div></center>
 
   <script type="text/javascript" charset="utf-8">
       "use strict";
 
-      window.onload = function () {
+      soundManager.url = "/";
+      soundManager.onready(function () {
           // This clip id, which identifies the audio clip, is something we
           // drop in via template upon serving the page.
           var clip_id = "{{clipid}}";
+
+          clip = soundManager.createSound({
+              id: "clip",
+              url: "/clip/" + clip_id,
+              whileLoading: function () { console.log("loading!"); }
+          });
 
           var clip_info = $.getJSON("/clip/" + clip_id + "/info")
           .success(function (result) { console.log("info success!"); console.log(result); })
           .error(function (xhr, err) { console.log("error getting info: " + err); })
           .complete(function () { console.log("info complete!"); });
-          //console.log(clip_info);
-
-          var clip_xhr = $.ajax("/clip/" + clip_id)
-          .success(function () { console.log("data success!"); })
-          .error(function () { console.log("data error."); })
-          .complete(function () { console.log("data complete!"); });
-
-          console.log(clip_xhr);
-      };
+      });
   </script>
 </body>
 

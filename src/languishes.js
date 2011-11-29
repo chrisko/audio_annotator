@@ -32,7 +32,7 @@ languishes.configure(function() {
     languishes.use(express.bodyParser());
 
     languishes.use(express.logger({ format: ":method :url" }));
-    languishes.use(express.static(config.files.root_dir + "src/static/"));
+    //languishes.use(express.static(config.files.root_dir + "src/static/"));
 });
 
 languishes.configure("dev", function() {
@@ -98,6 +98,7 @@ languishes.get("/clip/:id", function (req, res) {
                 stream = fs.createReadStream(filename, { encoding: "binary" });
                 res.writeHead(200, { "content-type": "audio/wav",
                                      "content-length": stats.size,
+                                     "accept-ranges": "bytes",
                                      "content-disposition": "inline; filename=" + req.params.id + ".wav" });
 
                 stream.on("error", function (exception) {
@@ -129,7 +130,7 @@ languishes.get("/clip/:id/info", function (req, res) {
                     wav_representation[field] = wav_file[field];
                 }
 
-                res.end(JSON.stringify(wav_representation));
+                res.json(wav_representation);
             });
         }
     });
@@ -184,6 +185,40 @@ languishes.post("/upload", function (req, res) {
         });
     });
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// Static Files ////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+var static_files = {
+    "/favicon.ico": "src/static/favicon.ico",
+
+    "/recorder.js": "src/recorder.js/recorder.js",
+    "/recorder.swf": "src/recorder.js/recorder.swf",
+    "/soundmanager2.js": "src/soundmanager2/script/soundmanager2.js",
+    "/soundmanager2_debug.swf": "src/soundmanager2/swf/soundmanager2_debug.swf",
+
+    "/waveform.js": "src/waveform.js",
+};
+
+var content_types = {
+    ".js": "application/x-javascript",
+    ".swf": "application/x-shockwave-flash",
+    ".wav": "audio/wav",
+};
+
+for (file in static_files) {
+    (function (f) {
+        languishes.get(f, function (req, res) {
+            for (content_type in content_types) {
+                var extension_index = f.length - content_type.length;
+                if (f.lastIndexOf(content_type) === extension_index) {
+                    res.header("Content-Type", content_types[content_type]);
+                }
+            }
+            res.sendfile(config.files.root_dir + static_files[f]);
+        });
+    }(file));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Server Startup //////////////////////////////////////////////////////////////
