@@ -9,7 +9,7 @@
 <body>
 
   <!-- Include jQuery from Media Temple's jQuery CDN -->
-  <script src="http://code.jquery.com/jquery-1.6.4.js"></script>
+  <script src="/jquery.js"></script>
 
   <!-- Grab SoundManager2 for the initial visualization -->
   <script src="/soundmanager2.js"></script>
@@ -20,6 +20,7 @@
   <script type="text/javascript" charset="utf-8">
       "use strict";
 
+      soundManager.consoleOnly = true;
       soundManager.url = "/";
       soundManager.onready(function () {
           // This clip id, which identifies the audio clip, is something we
