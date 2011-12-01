@@ -8,12 +8,13 @@ module.exports = {
     server: {
         host: "localhost",
         port: 3000,
-        root: "/"
+        root: "/",
     },
 
     files: {
-        root_dir:   root,
-        site_dir:   root + "site/",
-        data_dir: root + "site/data/"
+        root_dir: root,
+        site_dir: root + "site/",
+        data_dir: root + "site/data/",
+        static_dir: root + "site/static/",
     },
 };
