@@ -26,9 +26,9 @@
           // drop in via template upon serving the page.
           var clip_id = "{{clipid}}";
 
-          clip = soundManager.createSound({
+          var clip = soundManager.createSound({
               id: "clip",
-              url: "/clip/" + clip_id,
+              url: "/clip/" + clip_id + "/raw",
               whileLoading: function () { console.log("loading!"); }
           });
 

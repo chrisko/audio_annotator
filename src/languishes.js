@@ -88,6 +88,18 @@ languishes.get("/clip/:id", function (req, res) {
             res.writeHead(404, { "content-type": "text/plain" });
             res.end("No such file: " + filename)
         } else {
+            res.render("clipview.html", { "clipid": req.params.id });
+        }
+    });
+});
+
+languishes.get("/clip/:id/raw", function (req, res) {
+    var filename = config.files.data_dir + req.params.id + ".wav";
+    path.exists(filename, function (exists) {
+        if (!exists) {
+            res.writeHead(404, { "content-type": "text/plain" });
+            res.end("No such file: " + filename)
+        } else {
             fs.stat(filename, function (err, stats) {
                 if (err) {
                     res.writeHead(500, { "content-type": "text/plain" });
@@ -132,18 +144,6 @@ languishes.get("/clip/:id/info", function (req, res) {
 
                 res.json(wav_representation);
             });
-        }
-    });
-});
-
-languishes.get("/clip/:id/view", function (req, res) {
-    var filename = config.files.data_dir + req.params.id + ".wav";
-    path.exists(filename, function (exists) {
-        if (!exists) {
-            res.writeHead(404, { "content-type": "text/plain" });
-            res.end("No such file: " + filename)
-        } else {
-            res.render("clipview.html", { "clipid": req.params.id });
         }
     });
 });
