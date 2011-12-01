@@ -63,7 +63,7 @@ languishes.get("/record", function (req, res) {
 });
 
 languishes.get("/clips", function (req, res) {
-    fs.readdir(config.files.upload_dir, function (err, files) {
+    fs.readdir(config.files.data_dir, function (err, files) {
         if (err) {
             res.writeHead(500, { "content-type": "text/plain" });
             res.end("Server error: " + err);
@@ -82,7 +82,7 @@ languishes.get("/clips", function (req, res) {
 });
 
 languishes.get("/clip/:id", function (req, res) {
-    var filename = config.files.upload_dir + req.params.id + ".wav";
+    var filename = config.files.data_dir + req.params.id + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
@@ -114,7 +114,7 @@ languishes.get("/clip/:id", function (req, res) {
 });
 
 languishes.get("/clip/:id/info", function (req, res) {
-    var filename = config.files.upload_dir + req.params.id + ".wav";
+    var filename = config.files.data_dir + req.params.id + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
@@ -137,7 +137,7 @@ languishes.get("/clip/:id/info", function (req, res) {
 });
 
 languishes.get("/clip/:id/view", function (req, res) {
-    var filename = config.files.upload_dir + req.params.id + ".wav";
+    var filename = config.files.data_dir + req.params.id + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
@@ -170,7 +170,7 @@ function import_new_upload(new_filename) {
 languishes.post("/upload", function (req, res) {
     // Use Felix Geisendörfer's "formidable" to handle multipart uploads:
     var form = new formidable.IncomingForm();
-    form.uploadDir = config.files.upload_dir;
+    form.uploadDir = config.files.data_dir;
     form.keepExtensions = true;
 
     form.parse(req, function(err, fields, files) {

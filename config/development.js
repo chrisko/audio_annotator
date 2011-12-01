@@ -13,7 +13,7 @@ module.exports = {
 
     files: {
         root_dir:   root,
-        data_dir:   root + "data/",
-        upload_dir: root + "data/tmp/"
-    }
+        site_dir:   root + "site/",
+        data_dir: root + "site/data/"
+    },
 };
