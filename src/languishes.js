@@ -125,27 +125,38 @@ languishes.get("/clip/:id/raw", function (req, res) {
     });
 });
 
+languishes.get("/clip/:id/data", function (req, res) {
+    var filename = config.files.data_dir + req.params.id + ".wav";
+    wav.parse_wav(filename,
+        function (err) {
+            res.writeHead(500, { "content-type": "text/plain" });
+            res.end(err);
+        },
+        function (wav) {
+            // Check for "begin" and "end" query string parameters:
+            var begin = req.param("begin", 0);
+            var end = req.param("end", wav.num_samples);
+            // And return the samples as a JSON array:
+            res.json(wav.get_samples([ begin, end ]));
+        });
+});
+
 languishes.get("/clip/:id/info", function (req, res) {
     var filename = config.files.data_dir + req.params.id + ".wav";
-    path.exists(filename, function (exists) {
-        if (!exists) {
-            res.writeHead(404, { "content-type": "text/plain" });
-            res.end("No such file: " + filename)
-        } else {
-            fs.readFile(filename, function (err, data) {
-                if (err) throw err;
+    wav.parse_wav(filename,
+        function (err) {
+            res.writeHead(500, { "content-type": "text/plain" });
+            res.end(err);
+        },
+        function (wav) {
+            wav_representation = { }
+            for (field in wav_file) {
+                if (field.charAt(0) == '_') continue;
+                wav_representation[field] = wav_file[field];
+            }
 
-                wav_file = wav.parse_wav(data);
-                wav_representation = { }
-                for (field in wav_file) {
-                    if (field == "raw_data") continue;
-                    wav_representation[field] = wav_file[field];
-                }
-
-                res.json(wav_representation);
-            });
-        }
-    });
+            res.json(wav_representation);
+        });
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,10 +190,6 @@ languishes.post("/upload", function (req, res) {
 
         file = files["your_file"];
         import_new_upload(file.path);
-        fs.readFile(file.path, function (err, data) {
-            if (err) throw err;
-            wav_file = wav.parse_wav(data);
-        });
     });
 });
 

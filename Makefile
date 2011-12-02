@@ -27,6 +27,7 @@ site/static/3rd_party.txt:
 	@# Fetch the SoundManager2 static files:
 	@cd site/static \
 	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/script/soundmanager2.js" \
+	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/swf/soundmanager2.swf" \
 	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/swf/soundmanager2_debug.swf"
 	@# And grab a particular jQuery version from the jQuery CDN, as well:
 	@cd site/static \

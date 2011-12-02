@@ -21,6 +21,8 @@
       "use strict";
 
       soundManager.consoleOnly = true;
+      soundManager.debugMode = false;
+
       soundManager.url = "/";
       soundManager.onready(function () {
           // This clip id, which identifies the audio clip, is something we
@@ -37,7 +39,11 @@
           .success(function (result) { console.log("info success!"); console.log(result); })
           .error(function (xhr, err) { console.log("error getting info: " + err); })
           .complete(function () { console.log("info complete!"); });
+
+          var waveform = new Waveform(clip, 400, 200);
+          waveform.render();
       });
+
   </script>
 </body>
 
