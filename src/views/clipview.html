@@ -11,8 +11,11 @@
   <!-- Include jQuery from Media Temple's jQuery CDN -->
   <script src="/jquery.js"></script>
 
-  <!-- Grab SoundManager2 for the initial visualization -->
+  <!-- Grab SoundManager2 for managing the audio -->
   <script src="/soundmanager2.js"></script>
+
+  <!-- And grab Raphael for the waveform visualization -->
+  <script src="/raphael.js"></script>
 
   <script src="/waveform.js"></script>
   <center><div id="waveform"></div></center>
@@ -20,30 +23,34 @@
   <script type="text/javascript" charset="utf-8">
       "use strict";
 
+      console.log("setting soundManager stuff");
       soundManager.consoleOnly = true;
       soundManager.debugMode = false;
-
       soundManager.url = "/";
-      soundManager.onready(function () {
-          // This clip id, which identifies the audio clip, is something we
-          // drop in via template upon serving the page.
-          var clip_id = "{{clipid}}";
 
-          var clip = soundManager.createSound({
-              id: "clip",
-              url: "/clip/" + clip_id + "/raw",
-              whileLoading: function () { console.log("loading!"); }
+      $(document).ready(function () {
+          soundManager.onready(function () {
+              // This clip id, which identifies the audio clip, is something we
+              // drop in via template upon serving the page.
+              var clip_id = "{{clipid}}";
+
+              console.log(soundManager.url);
+
+              var clip = soundManager.createSound({
+                  id: "clip",
+                  url: "/clip/" + clip_id + "/raw",
+                  whileLoading: function () { console.log("loading!"); }
+              });
+
+              var clip_data = $.getJSON("/clip/" + clip_id + "/data")
+              .error(function (xhr, err) { console.log("error getting data: " + err); })
+              .success(function (clip_data, stat, xhr) {
+                  var waveform = new Waveform(clip_data);
+                  var r = Raphael("waveform", waveform.width, waveform.height);
+                  waveform.render(r);
+              });
           });
-
-          var clip_info = $.getJSON("/clip/" + clip_id + "/info")
-          .success(function (result) { console.log("info success!"); console.log(result); })
-          .error(function (xhr, err) { console.log("error getting info: " + err); })
-          .complete(function () { console.log("info complete!"); });
-
-          var waveform = new Waveform(clip, 400, 200);
-          waveform.render();
       });
-
   </script>
 </body>
 

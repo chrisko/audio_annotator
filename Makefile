@@ -1,8 +1,13 @@
 # Third-party files for static serving:
 RECORDERJS_URL="https://github.com/jwagener/recorder.js"
 RECORDERJS_SHA1="348095255e08740d92d2f6326f0dfef98978ff09"
+
 SOUNDMANAGER_URL="https://github.com/scottschiller/SoundManager2"
 SOUNDMANAGER_SHA1="8d9213ea0bc8aa37aec7c9676087423397aa019d"
+
+RAPHAELJS_URL="https://github.com/DmitryBaranovskiy/raphael"
+RAPHAELJS_SHA1="300aa589f5a0ba7fce667cd62c7cdda0bd5ad904"
+
 JQUERY_URL="http://code.jquery.com"
 JQUERY_VERSION="1.7"
 
@@ -29,6 +34,9 @@ site/static/3rd_party.txt:
 	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/script/soundmanager2.js" \
 	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/swf/soundmanager2.swf" \
 	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/swf/soundmanager2_debug.swf"
+	@# Get the Raphael version specified:
+	@cd site/static \
+	 && wget "$(RAPHAELJS_URL)/raw/$(RAPHAELJS_SHA1)/raphael.js"
 	@# And grab a particular jQuery version from the jQuery CDN, as well:
 	@cd site/static \
 	 && wget "$(JQUERY_URL)/jquery-$(JQUERY_VERSION).js"
