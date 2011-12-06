@@ -27,7 +27,7 @@ Waveform.prototype.update_play_marker = function (pos, dur) {
         this.raphael.playmarker = this.raphael.set();
 
     var starting_x = pos / dur * this.width;
-    var one_second_offset = 1000 / this.clip.duration * this.width;
+    var half_second_offset = 500 / this.clip.duration * this.width;
 
     // Wipe out the existing playmarker, if any:
     this.raphael.playmarker.clear();
@@ -35,7 +35,7 @@ Waveform.prototype.update_play_marker = function (pos, dur) {
     this.raphael.playmarker.push(
         this.raphael.rect(starting_x - 1, 0, 2, this.height)
             .attr({ fill: "red", "stroke-width": 0 })
-            .animate({ x: starting_x + one_second_offset, opacity: 0 }, 1000, "linear"));
+            .animate({ x: starting_x + half_second_offset, opacity: 0 }, 500, "linear"));
 
     // TODO: remove old playmarkers periodically.
 };
@@ -83,15 +83,18 @@ Waveform.prototype.selection_handler = function () {
         selected_pixels[1] / this.width * this.clip.duration
     ];
 
-    this.raphael.selection = this.raphael.rect(
-        selected_pixels[0], 0,
-        selected_pixels[1], this.height
-    );
+    //this.raphael.selection = this.raphael.rect(
+    //    selected_pixels[0], 0,
+    //    selected_pixels[1], this.height
+    //);
 };
 
 Waveform.prototype.attach_selection_pane = function () {
-    this.raphael.selection = this.raphael.rect(0, 0, this.width, this.height)
-        .attr({ opacity: 0.2, fill: "0xEEE" });
+    this.selection = [ 0, this.width ];  // Start off by including everything.
+    //this.raphael.selection = this.raphael.rect(0, 0, this.width, this.height)
+    //    .attr({ opacity: 0.2, fill: "0xEEE" });
+
+    //this.raphael.right_handle = this.raphael.circle( TODO
 };
 
 Waveform.prototype.render = function (target_div_name) {

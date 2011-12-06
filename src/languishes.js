@@ -186,7 +186,7 @@ languishes.post("/upload", function (req, res) {
         res.writeHead(200, { "content-type": "text/plain" });
         res.end(util.inspect({ fields: fields, files: files }));
 
-        file = files["your_file"];
+        file = files["recorded_audio_clip"];
         import_new_upload(file.path);
     });
 });

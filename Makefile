@@ -1,6 +1,6 @@
 # Third-party files for static serving:
 RECORDERJS_URL="https://github.com/jwagener/recorder.js"
-RECORDERJS_SHA1="348095255e08740d92d2f6326f0dfef98978ff09"
+RECORDERJS_SHA1="881498c1b8dbb8b10bc480be6fbad8b723fb1895"
 
 SOUNDMANAGER_URL="https://github.com/scottschiller/SoundManager2"
 SOUNDMANAGER_SHA1="8d9213ea0bc8aa37aec7c9676087423397aa019d"
