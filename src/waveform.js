@@ -9,19 +9,31 @@
 // commonly see, it's based on the maximum amplitude per sample. The "rms" way
 // ("Root Mean Square") looks smoother, since it's based on a windowed average.
 
-function Waveform(clip_data) {
-    if (typeof(clip_data) === "undefined") {
-        throw "Clip information required.";
-    }
+function Waveform(clip) {
+    if (typeof(clip) === "undefined")
+        throw "Clip required.";
 
-    this.data = clip_data;
+    // Input:
+    this.clip = clip;
+
+    // Defaults:
     this.width = 800;
     this.height = 200;
     this.method = "peak";
 }
 
-Waveform.prototype.render = function (r) {
-    var num_samples = this.data.length;
+Waveform.prototype.on_drag = function (dx, dy, x, y) {
+    $("#waveform").trigger("" (dx > 0) ? [ x, x + dx ]
+                                       : [ x + dx, x ];
+
+    $("#waveform").selected_pixels = [
+        selected_pixels[0] / waveform.width * clip.duration,
+        selected_pixels[1] / waveform.width * clip.duration
+    ];
+}
+
+Waveform.prototype.draw_waveform = function () {
+    var num_samples = this.clip.data.length;
 
     if (num_samples < this.width)
         throw "waveform width is less than the number of samples";
@@ -34,9 +46,8 @@ Waveform.prototype.render = function (r) {
 
         var max = 0; var total = 0;
         for (i = start_sample; i < end_sample; i++) {
-            var this_sample = this.data[i];
-
-            total += this.data[i];
+            var this_sample = this.clip.data[i];
+            total += this.clip.data[i];
         }
 
         var this_average = total / (end_sample - start_sample);
@@ -49,9 +60,34 @@ Waveform.prototype.render = function (r) {
 
     var path_string = "M0 " + (this.height / 2);
     for (var pixel = 0; pixel < this.width; pixel++) {
-        var dot_height = (this.height / 2) + (this.height / 2) * (averages[pixel] / highest_average);
+        var dot_height = (this.height / 2) + (this.height / 2)
+                       * (averages[pixel] / highest_average);
         path_string += "L" + pixel + " " + dot_height;
-        //r.circle(pixel, dot_height, 1);
+        this.raphael.circle(pixel, dot_height, 1);
     }
-    r.path(path_string);
+
+    this.raphael.path(path_string);
 };
+
+Waveform.prototype.attach_selection_handlers(
+    this.raphael.drag(function (dx, dy, x, y) {
+        var selected_pixels = (dx > 0) ? [ x, x + dx ] : [ x + dx, x ];
+        var selected_times = [
+            selected_pixels[0] / this.width * this.clip.duration,
+            selected_pixels[1] / this.width * this.clip.duration
+        ];
+
+        this.raphael.selection = this.raphael.rect(
+            selected_pixels[0], 0,
+            selected_pixels[1], this.height
+        );
+    }
+);
+
+Waveform.prototype.render = function (target_div_name) {
+    // Create the Raphael canvas in the provided div:
+    this.raphael = Raphael(target_div_name, this.width, this.height);
+
+    this.draw_waveform();
+    this.attach_selection_handlers();
+}

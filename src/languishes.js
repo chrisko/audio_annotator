@@ -96,7 +96,6 @@ languishes.get(/^\/clip\/([^\.\/]+)$/, function (req, res) {
 
 languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
     var filename = config.files.data_dir + req.params[0] + ".wav";
-    console.log("First param: " + req.params[0]);
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
@@ -106,7 +105,7 @@ languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
                 if (err) {
                     res.writeHead(500, { "content-type": "text/plain" });
                     res.end(err);
-                    console.log("Error stating " + filename + ": " + err);
+                    console.log("Error in stat(" + filename + "): " + err);
                     return;
                 }
 
@@ -115,7 +114,7 @@ languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
                 res.setHeader("Content-Length", stats.size);
                 res.setHeader("Content-Transfer-encoding", "binary");
                 res.setHeader("Accept-Ranges", "bytes");
-                res.setHeader("Content-Disposition", "inline; filename=" + req.params.id + ".wav");
+                res.setHeader("Content-Disposition", "inline; filename=" + req.params[0] + ".wav");
 
                 // And send the file back in the response:
                 res.sendfile(filename);
