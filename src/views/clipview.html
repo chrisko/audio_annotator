@@ -23,9 +23,8 @@
   <script type="text/javascript" charset="utf-8">
       "use strict";
 
-      console.log("setting soundManager stuff");
       soundManager.consoleOnly = true;
-      soundManager.debugMode = false;
+      //soundManager.debugMode = false;
       soundManager.url = "/";
 
       $(document).ready(function () {
@@ -34,11 +33,9 @@
               // drop in via template upon serving the page.
               var clip_id = "{{clipid}}";
 
-              console.log(soundManager.url);
-
               var clip = soundManager.createSound({
                   id: "clip",
-                  url: "/clip/" + clip_id + "/raw",
+                  url: "/clip/" + clip_id + ".wav",
                   whileLoading: function () { console.log("loading!"); }
               });
 
@@ -48,6 +45,14 @@
                   var waveform = new Waveform(clip_data);
                   var r = Raphael("waveform", waveform.width, waveform.height);
                   waveform.render(r);
+              });
+
+              // Capture the space bar to toggle play/pause.
+              $("body").keypress(function (e) {
+                  // Different browsers do different things:
+                  var key = e.which || e.keyCode || e.keyChar;
+                  if (key == 32)
+                      clip.togglePause();
               });
           });
       });

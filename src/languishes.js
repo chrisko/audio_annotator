@@ -68,33 +68,35 @@ languishes.get("/clips", function (req, res) {
             res.writeHead(500, { "content-type": "text/plain" });
             res.end("Server error: " + err);
             throw err;
-        }
+        } else {
+            var clips = [ ];
+            for (i in files) {
+                clips.push({
+                    basename: path.basename(files[i], ".wav"),
+                    filename: files[i],
+                });
+            }
 
-        res.writeHead(200, { "content-type": "text/html" });
-        res.write("<html><body>");
-        for (i in files) {
-            var basename = path.basename(files[i], ".wav");
-            res.write("<a href=\"clip/" + basename + "\">" + basename + "</a>&nbsp;");
-            res.write("<a href=\"clip/" + basename + "/info\">(info)</a><br>");
+            res.render("cliplist.html", { "clips": clips });
         }
-        res.end("</body></html>");
     });
 });
 
-languishes.get("/clip/:id", function (req, res) {
-    var filename = config.files.data_dir + req.params.id + ".wav";
+languishes.get(/^\/clip\/([^\.\/]+)$/, function (req, res) {
+    var filename = config.files.data_dir + req.params[0] + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
             res.end("No such file: " + filename)
         } else {
-            res.render("clipview.html", { "clipid": req.params.id });
+            res.render("clipview.html", { "clipid": req.params[0] });
         }
     });
 });
 
-languishes.get("/clip/:id/raw", function (req, res) {
-    var filename = config.files.data_dir + req.params.id + ".wav";
+languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
+    var filename = config.files.data_dir + req.params[0] + ".wav";
+    console.log("First param: " + req.params[0]);
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
@@ -103,23 +105,20 @@ languishes.get("/clip/:id/raw", function (req, res) {
             fs.stat(filename, function (err, stats) {
                 if (err) {
                     res.writeHead(500, { "content-type": "text/plain" });
-                    res.end(err); console.log(err); return;
+                    res.end(err);
+                    console.log("Error stating " + filename + ": " + err);
+                    return;
                 }
 
-                // Open a read stream and stream the wav file to the user:
-                stream = fs.createReadStream(filename, { encoding: "binary" });
-                res.writeHead(200, { "content-type": "audio/wav",
-                                     "content-length": stats.size,
-                                     "accept-ranges": "bytes",
-                                     "content-disposition": "inline; filename=" + req.params.id + ".wav" });
+                // Add the headers to the wav file response:
+                res.setHeader("Content-Type", "audio/wav");
+                res.setHeader("Content-Length", stats.size);
+                res.setHeader("Content-Transfer-encoding", "binary");
+                res.setHeader("Accept-Ranges", "bytes");
+                res.setHeader("Content-Disposition", "inline; filename=" + req.params.id + ".wav");
 
-                stream.on("error", function (exception) {
-                    console.log(exception);
-                    res.end();  // We already sent the 200 header
-                });
-
-                stream.on("data", function (data) { res.write(data, "binary"); });
-                stream.on("end", function () { res.end(); });
+                // And send the file back in the response:
+                res.sendfile(filename);
             });
         }
     });

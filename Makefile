@@ -25,18 +25,25 @@ site/static/languishes.txt: src/waveform.js
 
 site/static/3rd_party.txt:
 	@mkdir -p site/static
+	
 	@# Fetch the recorder.js static files:
 	@cd site/static \
 	 && wget "$(RECORDERJS_URL)/raw/$(RECORDERJS_SHA1)/recorder.js" \
 	 && wget "$(RECORDERJS_URL)/raw/$(RECORDERJS_SHA1)/recorder.swf"
+	
 	@# Fetch the SoundManager2 static files:
 	@cd site/static \
 	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/script/soundmanager2.js" \
 	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/swf/soundmanager2.swf" \
 	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/swf/soundmanager2_debug.swf"
+	@mkdir -p site/static/css
+	@cd site/static/css \
+	 && wget "$(SOUNDMANAGER_URL)/raw/$(SOUNDMANAGER_SHA1)/demo/page-player/css/page-player.css"
+	
 	@# Get the Raphael version specified:
 	@cd site/static \
 	 && wget "$(RAPHAELJS_URL)/raw/$(RAPHAELJS_SHA1)/raphael.js"
+	
 	@# And grab a particular jQuery version from the jQuery CDN, as well:
 	@cd site/static \
 	 && wget "$(JQUERY_URL)/jquery-$(JQUERY_VERSION).js"

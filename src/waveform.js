@@ -15,7 +15,7 @@ function Waveform(clip_data) {
     }
 
     this.data = clip_data;
-    this.width = 600;
+    this.width = 800;
     this.height = 200;
     this.method = "peak";
 }
