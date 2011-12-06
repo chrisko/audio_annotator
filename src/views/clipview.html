@@ -55,41 +55,10 @@
               waveform.width = 1000;
               waveform.height = 400;
 
-              waveform.render();
-
-              // Add the drag-handling methods:
-              r.drag(
-                  // First: the "onmove" handler:
-                  function (dx, dy, x, y) {
-                      $("#waveform").trigger("" (dx > 0) ? [ x, x + dx ]
-                                                         : [ x + dx, x ];
-
-                      $("#waveform").selected_pixels = [
-                          selected_pixels[0] / waveform.width * clip.duration,
-                          selected_pixels[1] / waveform.width * clip.duration
-                      ];
-                  },
-                  // Next, the "onstart" handler:
-                  function (x, y) {
-                      $("#waveform").selected_pixels = [ x, x ];
-                  },
-                  // And finally, the "onend" handler:
-                  function () {
-                      $("#waveform").
-                  });
+              waveform.render("waveform");
 
               $("#waveform").on("update_play_marker", function (e, pos, dur) {
-                  if (typeof r.playmarker === "undefined")
-                      r.playmarker = r.set();
-
-                  // Draw a rectangle where we're currently playing:
-                  r.playmarker.push(
-                      r.rect(pos / dur * waveform.width - 1, 0, 2, waveform.height)
-                      .animate({ opacity: 0 }, 1000, "linear"));
-                      // TODO: animate rightward motion, too.
-
-                  r.playmarker.attr({ fill: "red", "stroke-width": 0 });
-                  // TODO: remove old playmarkers periodically.
+                  waveform.update_play_marker(pos, dur);
               });
           });
 

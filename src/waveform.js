@@ -20,17 +20,25 @@ function Waveform(clip) {
     this.width = 800;
     this.height = 200;
     this.method = "peak";
-}
+};
 
-Waveform.prototype.on_drag = function (dx, dy, x, y) {
-    $("#waveform").trigger("" (dx > 0) ? [ x, x + dx ]
-                                       : [ x + dx, x ];
+Waveform.prototype.update_play_marker = function (pos, dur) {
+    if (typeof this.raphael.playmarker === "undefined")
+        this.raphael.playmarker = this.raphael.set();
 
-    $("#waveform").selected_pixels = [
-        selected_pixels[0] / waveform.width * clip.duration,
-        selected_pixels[1] / waveform.width * clip.duration
-    ];
-}
+    var starting_x = pos / dur * this.width;
+    var one_second_offset = 1000 / this.clip.duration * this.width;
+
+    // Wipe out the existing playmarker, if any:
+    this.raphael.playmarker.clear();
+    // And draw a rectangle where we're currently playing:
+    this.raphael.playmarker.push(
+        this.raphael.rect(starting_x - 1, 0, 2, this.height)
+            .attr({ fill: "red", "stroke-width": 0 })
+            .animate({ x: starting_x + one_second_offset, opacity: 0 }, 1000, "linear"));
+
+    // TODO: remove old playmarkers periodically.
+};
 
 Waveform.prototype.draw_waveform = function () {
     var num_samples = this.clip.data.length;
@@ -63,31 +71,33 @@ Waveform.prototype.draw_waveform = function () {
         var dot_height = (this.height / 2) + (this.height / 2)
                        * (averages[pixel] / highest_average);
         path_string += "L" + pixel + " " + dot_height;
-        this.raphael.circle(pixel, dot_height, 1);
     }
 
     this.raphael.path(path_string);
 };
 
-Waveform.prototype.attach_selection_handlers(
-    this.raphael.drag(function (dx, dy, x, y) {
-        var selected_pixels = (dx > 0) ? [ x, x + dx ] : [ x + dx, x ];
-        var selected_times = [
-            selected_pixels[0] / this.width * this.clip.duration,
-            selected_pixels[1] / this.width * this.clip.duration
-        ];
+Waveform.prototype.selection_handler = function () {
+    var selected_pixels = (dx > 0) ? [ x, x + dx ] : [ x + dx, x ];
+    var selected_times = [
+        selected_pixels[0] / this.width * this.clip.duration,
+        selected_pixels[1] / this.width * this.clip.duration
+    ];
 
-        this.raphael.selection = this.raphael.rect(
-            selected_pixels[0], 0,
-            selected_pixels[1], this.height
-        );
-    }
-);
+    this.raphael.selection = this.raphael.rect(
+        selected_pixels[0], 0,
+        selected_pixels[1], this.height
+    );
+};
+
+Waveform.prototype.attach_selection_pane = function () {
+    this.raphael.selection = this.raphael.rect(0, 0, this.width, this.height)
+        .attr({ opacity: 0.2, fill: "0xEEE" });
+};
 
 Waveform.prototype.render = function (target_div_name) {
     // Create the Raphael canvas in the provided div:
     this.raphael = Raphael(target_div_name, this.width, this.height);
 
     this.draw_waveform();
-    this.attach_selection_handlers();
-}
+    this.attach_selection_pane();
+};
