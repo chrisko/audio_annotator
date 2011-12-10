@@ -148,9 +148,9 @@ languishes.get("/clip/:id/info", function (req, res) {
         },
         function (wav) {
             wav_representation = { }
-            for (field in wav_file) {
+            for (field in wav) {
                 if (field.charAt(0) == '_') continue;
-                wav_representation[field] = wav_file[field];
+                wav_representation[field] = wav[field];
             }
 
             res.json(wav_representation);

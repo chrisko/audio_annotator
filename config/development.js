@@ -1,8 +1,7 @@
 // Chris Koenig <ckoenig@seas.upenn.edu>
 // CIS-400 Senior Design Project
 
-//var root = "/Users/ckoenig/src/languishes/";
-var root = "/Users/ckoenig/.jenkins/jobs/languishes/workspace/";
+var root = "/Users/ckoenig/src/languishes/";
 
 // Development environment configuration.
 module.exports = {

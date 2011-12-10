@@ -4,6 +4,12 @@
   <title>{{clipid}}</title>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta name="author" content="Chris Koenig" />
+
+  <style type="text/css">
+      body {
+           font:100% normal verdana,arial,tahoma,"sans serif";
+       }
+   </style>
 </head>
 
 <body>
@@ -19,8 +25,10 @@
 
   <script src="/waveform.js"></script>
   <center>
-      <div id="waveform"></div>
+      Please select the word "sandwich" in the audio below.
       <p>
+      <div id="waveform"></div><img src="/icons/play.png" height=50 />
+      <br>
       <button type="button">Complete</button>
   </center>
 
@@ -56,8 +64,8 @@
               clip.data = clip_data;
 
               var waveform = new Waveform(clip);
-              waveform.width = 1000;
-              waveform.height = 400;
+              waveform.width = 600;
+              waveform.height = 200;
 
               waveform.render("waveform");
 
