@@ -23,14 +23,17 @@ function Waveform(clip) {
 };
 
 Waveform.prototype.update_play_marker = function (pos, dur) {
-    if (typeof this.raphael.playmarker === "undefined")
+    // If there's no playmarker yet, create it as an empty Raphael set:
+    if (typeof this.raphael.playmarker === "undefined") {
         this.raphael.playmarker = this.raphael.set();
+    } else {
+        // Otherwise, wipe out the existing playmarker:
+        this.raphael.playmarker.clear();
+    }
 
     var starting_x = pos / dur * this.width;
     var half_second_offset = 500 / this.clip.duration * this.width;
 
-    // Wipe out the existing playmarker, if any:
-    this.raphael.playmarker.clear();
     // And draw a rectangle where we're currently playing:
     this.raphael.playmarker.push(
         this.raphael.rect(starting_x - 1, 0, 2, this.height)

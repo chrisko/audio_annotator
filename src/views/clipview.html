@@ -25,18 +25,14 @@
 
   <script src="/waveform.js"></script>
   <center>
-      Please select the word "sandwich" in the audio below.
-      <p>
-      <div id="waveform"></div><img src="/icons/play.png" height=50 />
-      <br>
-      <button type="button">Complete</button>
+      <div id="waveform"></div>
   </center>
 
   <script type="text/javascript" charset="utf-8">
       "use strict";
 
       soundManager.consoleOnly = true;
-      soundManager.debugMode = false;
+      soundManager.debugMode = true;
       soundManager.url = "/";
       soundManager.useFastPolling = true;
       soundManager.useHighPerformance = true;
@@ -49,8 +45,11 @@
           var clip = soundManager.createSound({
               id: "clip",
               url: "/clip/" + clip_id + ".wav",
+              type: "audio/wav",
               autoLoad: true,
               whileplaying: function () {
+                  console.log("readyState: " + this.readyState);
+                  console.log("isBuffering: " + this.isBuffering);
                   // Trigger our custom event, which we'll handle later on:
                   $("#waveform").trigger("update_play_marker",
                                          [ this.position, this.duration ]);
