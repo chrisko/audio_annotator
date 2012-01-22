@@ -1,0 +1,23 @@
+{
+    "name": "languishes",
+    "author": "Chris Koenig <ckoenig@seas.upenn.edu>",
+    "description": "A web interface for digital audio annotation",
+    "version": "0.1.0",
+    "private": true,
+
+    "dependencies": {
+        "config": "0.4.x",
+        "ctype": "0.4.x",
+        "express": "2.5.x",
+        "formidable": "1.0.x",
+        "node_redis": "0.7.x",
+        "stache": "0.1.x"
+    },
+    "devDependencies": {
+        "vows": "0.6.x"
+    },
+
+    "scripts": {
+        "start": "node ./src/languishes.js"
+    }
+}
