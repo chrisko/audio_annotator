@@ -11,6 +11,7 @@
         "express": "2.5.x",
         "formidable": "1.0.x",
         "redis": "0.7.x",
+        "socket.io": "0.8.x",
         "stache": "0.1.x"
     },
     "devDependencies": {

@@ -53,6 +53,9 @@
       <div id="waveform"></div>
   </center>
 
+  <!-- socket.io -->
+  <script src="/socket.io/socket.io.js"></script>
+
   <script type="text/javascript" charset="utf-8">
       "use strict";
 
@@ -66,6 +69,12 @@
           // This clip id, which identifies the audio clip, is something we
           // drop in via template upon serving the page.
           var clip_id = "{{clipid}}";
+          var socket = io.connect("");  // No arguments means autodiscover.
+          $("#waveform").mousemove(function (event) {
+              socket.emit("mouse move", { t: event.timeStamp,
+                                          x: event.pageX,
+                                          y: event.pageY });
+          });
 
           var clip = soundManager.createSound({
               id: "clip",

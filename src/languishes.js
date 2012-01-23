@@ -23,6 +23,13 @@ db.on("error", function (err) {
 // Express Configuration ///////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 var languishes = express.createServer();
+var io = require("socket.io").listen(languishes);
+
+io.sockets.on("connection", function (socket) {
+    socket.on("mouse move", function (data) {
+        console.log("[" + data.t + "] x: " + data.x + ", y: " + data.y);
+    });
+});
 
 languishes.configure(function() {
     languishes.set("views", config.fs.root_dir + "src/views/");
