@@ -10,7 +10,7 @@
         "ctype": "0.4.x",
         "express": "2.5.x",
         "formidable": "1.0.x",
-        "node_redis": "0.7.x",
+        "redis": "0.7.x",
         "stache": "0.1.x"
     },
     "devDependencies": {

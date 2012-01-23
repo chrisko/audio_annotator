@@ -8,7 +8,31 @@
   <style type="text/css">
       body {
            font:100% normal verdana,arial,tahoma,"sans serif";
-       }
+      }
+
+      #spectrogram {
+          position:absolute;
+          top:0;
+          bottom:0;
+          left:0;
+          height:100%;
+          width:100%;
+          visibility:visible;
+      }
+
+      #waveform {
+          z-index:1000;
+          position:absolute;
+          top:0;
+          bottom:0;
+          left:0;
+          height:100%;
+          width:100%;
+          opacity:0.45;
+          -moz-opacity:0.45;
+          filter:alpha(opacity=45);
+          visibility:visible;
+      }
    </style>
 </head>
 
@@ -25,6 +49,7 @@
 
   <script src="/waveform.js"></script>
   <center>
+      <img id="spectrogram" src="{{clipid}}/spectrogram">
       <div id="waveform"></div>
   </center>
 
@@ -63,8 +88,8 @@
               clip.data = clip_data;
 
               var waveform = new Waveform(clip);
-              waveform.width = 600;
-              waveform.height = 200;
+              waveform.width = $("#waveform").width();
+              waveform.height = $("#waveform").height();
 
               waveform.render("waveform");
 

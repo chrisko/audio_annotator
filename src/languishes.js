@@ -2,14 +2,22 @@
 // Chris Koenig <ckoenig@seas.upenn.edu>
 // CIS-400 Senior Design Project
 
+// languishes.js -- Request Routing and Address Handling
+
 var config = require("config"),
     crypto = require("crypto"),
     express = require("express"),
     fs = require("fs"),
     formidable = require("formidable"),
     path = require("path"),
+    redis = require("redis"),
     util = require("util"),
     wav = require("./wav.js");
+
+var db = redis.createClient();
+db.on("error", function (err) {
+    console.log("Redis error: " + err);
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Express Configuration ///////////////////////////////////////////////////////
@@ -17,7 +25,7 @@ var config = require("config"),
 var languishes = express.createServer();
 
 languishes.configure(function() {
-    languishes.set("views", config.files.root_dir + "src/views/");
+    languishes.set("views", config.fs.root_dir + "src/views/");
 
     // Use mustache templating for .html files, via the stache module.
     languishes.set("view engine", "mustache");
@@ -32,7 +40,7 @@ languishes.configure(function() {
     languishes.use(express.bodyParser());
 
     languishes.use(express.logger({ format: ":method :url" }));
-    languishes.use(express.static(config.files.static_dir));
+    languishes.use(express.static(config.fs.static_dir));
 });
 
 languishes.configure("dev", function() {
@@ -45,6 +53,20 @@ languishes.configure("prod", function() {
     languishes.use(express.errorHandler());
     // TODO: languishes.use("view cache") for caching.
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// API Handling Methods ////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+db.sadd("clips", "testing");
+languishes.get("/api/clips", function (req, res) {
+    db.smembers("clips", function (err, replies) {
+        console.log(replies);
+        res.json(replies);
+    });
+});
+
+//languishes.get(/\/api\/clip\/([^\.\/]+)\/samples\/?$/, function (req, res) {
+//    re
 
 ////////////////////////////////////////////////////////////////////////////////
 // Request Handling Methods ////////////////////////////////////////////////////
@@ -63,7 +85,7 @@ languishes.get("/record", function (req, res) {
 });
 
 languishes.get("/clips", function (req, res) {
-    fs.readdir(config.files.data_dir, function (err, files) {
+    fs.readdir(config.fs.data_dir, function (err, files) {
         if (err) {
             res.writeHead(500, { "content-type": "text/plain" });
             res.end("Server error: " + err);
@@ -83,7 +105,7 @@ languishes.get("/clips", function (req, res) {
 });
 
 languishes.get(/^\/clip\/([^\.\/]+)$/, function (req, res) {
-    var filename = config.files.data_dir + req.params[0] + ".wav";
+    var filename = config.fs.data_dir + req.params[0] + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
@@ -95,7 +117,7 @@ languishes.get(/^\/clip\/([^\.\/]+)$/, function (req, res) {
 });
 
 languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
-    var filename = config.files.data_dir + req.params[0] + ".wav";
+    var filename = config.fs.data_dir + req.params[0] + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
@@ -124,7 +146,7 @@ languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
 });
 
 languishes.get("/clip/:id/data", function (req, res) {
-    var filename = config.files.data_dir + req.params.id + ".wav";
+    var filename = config.fs.data_dir + req.params.id + ".wav";
     wav.parse_wav(filename,
         function (err) {
             res.writeHead(500, { "content-type": "text/plain" });
@@ -140,7 +162,7 @@ languishes.get("/clip/:id/data", function (req, res) {
 });
 
 languishes.get("/clip/:id/info", function (req, res) {
-    var filename = config.files.data_dir + req.params.id + ".wav";
+    var filename = config.fs.data_dir + req.params.id + ".wav";
     wav.parse_wav(filename,
         function (err) {
             res.writeHead(500, { "content-type": "text/plain" });
@@ -155,6 +177,21 @@ languishes.get("/clip/:id/info", function (req, res) {
 
             res.json(wav_representation);
         });
+});
+
+languishes.get("/clip/:id/spectrogram", function (req, res) {
+    var filename = config.fs.data_dir + req.params.id + ".wav";
+    var cmd = "sox \"" + filename + "\" -n spectrogram -x 1280 -y 800 -m -r -l -o \"" + config.fs.data_dir + "/spectrogram.png\"";
+    console.log(cmd);
+    require("child_process").exec(cmd, function (error, stdout, stderr) {
+        console.log("stdout: " + stdout);
+        console.log("stderr: " + stderr);
+        if (error === null) {
+            res.sendfile(config.fs.data_dir + "/spectrogram.png");
+        } else {
+            console.log("sox exec error: " + error);
+        }
+    });
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +216,7 @@ function import_new_upload(new_filename) {
 languishes.post("/upload", function (req, res) {
     // Use Felix Geisendörfer's "formidable" to handle multipart uploads:
     var form = new formidable.IncomingForm();
-    form.uploadDir = config.files.data_dir;
+    form.uploadDir = config.fs.data_dir;
     form.keepExtensions = true;
 
     form.parse(req, function(err, fields, files) {
@@ -192,17 +229,9 @@ languishes.post("/upload", function (req, res) {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
-// Static Files ////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-var content_types = {
-    ".js": "application/x-javascript",
-    ".swf": "application/x-shockwave-flash",
-    ".wav": "audio/wav",
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // Server Startup //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-languishes.listen(3000);
+//languishes.clip_library = ClipLibrary(config.fs.data_dir);
+languishes.listen(config.server.port);
 console.log("Express server listening on port %d in %s mode",
             languishes.address().port, languishes.settings.env);

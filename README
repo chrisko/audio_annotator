@@ -9,3 +9,11 @@ http://openmymind.net/2011/11/8/Redis-Zero-To-Master-In-30-Minutes-Part-1/
 http://www.html5rocks.com/en/tutorials/file/dndfiles/
 
 http://code.recollect.com/post/13372390010/mechanical-turk-unshredder
+
+125286-matte-white-square-icon-media-full-set
+
+SoX homebrew editing:
+vim /usr/local/Library/Formula/sox.rb
+after "def install", add a line with "ENV.x11"
+similar to
+https://github.com/ColinHebert/homebrew/commit/b0c028150f6aac178e1736031f86c66544acc904
