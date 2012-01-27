@@ -111,18 +111,6 @@ languishes.get("/clips", function (req, res) {
     });
 });
 
-languishes.get(/^\/clip\/([^\.\/]+)$/, function (req, res) {
-    var filename = config.fs.data_dir + req.params[0] + ".wav";
-    path.exists(filename, function (exists) {
-        if (!exists) {
-            res.writeHead(404, { "content-type": "text/plain" });
-            res.end("No such file: " + filename)
-        } else {
-            res.render("clipview.html", { "clipid": req.params[0] });
-        }
-    });
-});
-
 languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
     var filename = config.fs.data_dir + req.params[0] + ".wav";
     path.exists(filename, function (exists) {
@@ -148,6 +136,18 @@ languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
                 // And send the file back in the response:
                 res.sendfile(filename);
             });
+        }
+    });
+});
+
+languishes.get(/^\/clip\/([^\/]+)$/, function (req, res) {
+    var filename = config.fs.data_dir + req.params[0] + ".wav";
+    path.exists(filename, function (exists) {
+        if (!exists) {
+            res.writeHead(404, { "content-type": "text/plain" });
+            res.end("No such file: " + filename)
+        } else {
+            res.render("clipview.html", { "clipid": req.params[0] });
         }
     });
 });
