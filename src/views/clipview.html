@@ -5,15 +5,26 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta name="author" content="Chris Koenig" />
 
+  <link rel="stylesheet" type="text/css" href="/reset.css" />
   <style type="text/css">
+      /* * {
+          border: 1px solid red !important;
+      }*/
+
+      html {
+          height: 100%;
+      }
+
       body {
-           font:100% normal verdana,arial,tahoma,"sans serif";
+          margin:0;
+          padding:0;
+          height:100%;
+          font:100% normal verdana,arial,tahoma,"sans serif";
       }
 
       #spectrogram {
           position:absolute;
           top:0;
-          bottom:0;
           left:0;
           height:100%;
           width:100%;
@@ -21,16 +32,15 @@
       }
 
       #waveform {
-          z-index:1000;
           position:absolute;
           top:0;
-          bottom:0;
           left:0;
+          z-index:1000;
           height:100%;
           width:100%;
-          opacity:0.45;
-          -moz-opacity:0.45;
-          filter:alpha(opacity=45);
+          opacity:0.15;
+          -moz-opacity:0.15;
+          filter:alpha(opacity=15);
           visibility:visible;
       }
    </style>
@@ -59,6 +69,13 @@
   <script type="text/javascript" charset="utf-8">
       "use strict";
 
+      $("#waveform").hover(function() {
+          // Other cursor options: "move", "col-resize", "text"
+          $(this).css("cursor", "crosshair");
+      }, function() {
+          $(this).css("cursor", "auto");
+      });
+
       soundManager.consoleOnly = true;
       soundManager.debugMode = true;
       soundManager.url = "/";
@@ -72,8 +89,8 @@
           var socket = io.connect("");  // No arguments means autodiscover.
           $("#waveform").mousemove(function (event) {
               socket.emit("mouse move", { t: event.timeStamp,
-                                          x: event.pageX,
-                                          y: event.pageY });
+                                          x: event.pageX - this.offsetLeft,
+                                          y: event.pageY - this.offsetTop });
           });
 
           var clip = soundManager.createSound({
@@ -88,6 +105,14 @@
                   $("#waveform").trigger("update_play_marker",
                                          [ this.position, this.duration ]);
               }
+          });
+
+          $("#waveform").bind("mousedown", function (event) {
+              console.log("mouse down!");
+          });
+
+          $("#waveform").bind("mouseup", function (event) {
+              console.log("mouse up!");
           });
 
           var clip_data = $.getJSON("/clip/" + clip_id + "/data")
