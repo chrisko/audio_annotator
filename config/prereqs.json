@@ -1,0 +1,31 @@
+{
+    "recorder.js": {
+        "url": "http://github.com/jwagener/recorder.js/raw/{{sha1}}/",
+        "sha1": "881498c1b8dbb8b10bc480be6fbad8b723fb1895",
+        "files": [ "recorder.js", "recorder.swf" ]
+    },
+
+    "soundmanager": {
+        "url": "http://github.com/scottschiller/SoundManager/raw/{{sha1}}/",
+        "sha1": "8d9213ea0bc8aa37aec7c9676087423397aa019d",
+        "files": [ "script/soundmanager2.js", "swf/soundmanager2.swf",
+                   "swf/soundmanager2_debug.swf" ]
+    },
+
+    "raphael": {
+        "url": "http://github.com/DmitryBaranovskiy/raphael/",
+        "sha1": "300aa589f5a0ba7fce667cd62c7cdda0bd5ad904",
+        "files": [ "raphael.js" ]
+    },
+
+    "jquery": {
+        "url": "http://code.jquery.com/",
+        "version": "1.7",
+        "files": [ "jquery-{{version}}.js" ]
+    }
+
+    "reset": {
+        "url": "http://meyerweb.com/eric/tools/css/reset/",
+        files: [ "reset.css" ]
+    }
+}
