@@ -17,3 +17,5 @@ vim /usr/local/Library/Formula/sox.rb
 after "def install", add a line with "ENV.x11"
 similar to
 https://github.com/ColinHebert/homebrew/commit/b0c028150f6aac178e1736031f86c66544acc904
+
+http://www.danielbaulig.de/socket-ioexpress/
