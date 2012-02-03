@@ -10,8 +10,7 @@
 // ("Root Mean Square") looks smoother, since it's based on a windowed average.
 
 function Waveform(clip) {
-    if (typeof(clip) === "undefined")
-        throw "Clip required.";
+    assert(clip.length);
 
     // Input:
     this.clip = clip;

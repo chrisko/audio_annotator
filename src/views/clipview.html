@@ -7,9 +7,12 @@
 
   <link rel="stylesheet" type="text/css" href="/reset.css" />
   <style type="text/css">
-      /* * {
-          border: 1px solid red !important;
-      }*/
+      * {
+          /* border:1px solid red !important; */
+          -webkit-box-sizing:border-box; /* Safari/Chrome, other WebKit */
+          -moz-box-sizing:border-box;    /* Firefox, other Gecko */
+          box-sizing:border-box;         /* Opera/IE 8+ */
+      }
 
       html {
           height: 100%;
@@ -29,6 +32,7 @@
           height:100%;
           width:100%;
           visibility:visible;
+          padding:20px 20px 20px 20px;
       }
 
       #waveform {
@@ -42,6 +46,7 @@
           -moz-opacity:0.15;
           filter:alpha(opacity=15);
           visibility:visible;
+          padding:20px 20px 20px 20px;
       }
    </style>
 </head>
@@ -57,24 +62,32 @@
   <!-- And grab Raphael for the waveform visualization -->
   <script src="/raphael.js"></script>
 
+  <!-- socket.io -->
+  <script src="/socket.io/socket.io.js"></script>
+
   <script src="/waveform.js"></script>
+  <script src="/clipaudio.js"></script>
+  <script src="/selection.js"></script>
+  <script src="/clipviewer.js"></script>
+
   <center>
       <img id="spectrogram" src="{{clipid}}/spectrogram">
       <div id="waveform"></div>
   </center>
 
-  <!-- socket.io -->
-  <script src="/socket.io/socket.io.js"></script>
-
   <script type="text/javascript" charset="utf-8">
       "use strict";
 
-      $("#waveform").hover(function() {
+      /*$("#waveform").hover(function() {
           // Other cursor options: "move", "col-resize", "text"
           $(this).css("cursor", "crosshair");
       }, function() {
           $(this).css("cursor", "auto");
-      });
+      }); */
+
+      var clip_viewer = new ClipViewer("waveform", "{{clipid}}");
+
+      /*
 
       soundManager.consoleOnly = true;
       soundManager.debugMode = true;
@@ -86,12 +99,12 @@
           // This clip id, which identifies the audio clip, is something we
           // drop in via template upon serving the page.
           var clip_id = "{{clipid}}";
-          var socket = io.connect("");  // No arguments means autodiscover.
-          $("#waveform").mousemove(function (event) {
-              socket.emit("mouse move", { t: event.timeStamp,
-                                          x: event.pageX - this.offsetLeft,
-                                          y: event.pageY - this.offsetTop });
-          });
+          //var socket = io.connect("");  // No arguments means autodiscover.
+          //$("#waveform").mousemove(function (event) {
+          //    socket.emit("mouse move", { t: event.timeStamp,
+          //                                x: event.pageX - this.offsetLeft,
+          //                                y: event.pageY - this.offsetTop });
+          //});
 
           var clip = soundManager.createSound({
               id: "clip",
@@ -139,7 +152,7 @@
               if (key == 32)
                   clip.togglePause();
           });
-      });
+      }); */
   </script>
 </body>
 
