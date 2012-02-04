@@ -22,5 +22,6 @@
     },
 
     "scripts": {
+        "postinstall": "./scripts/install.sh"
     }
 }

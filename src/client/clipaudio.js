@@ -30,3 +30,4 @@ function ClipAudio(div, clip_id) {
 
         this.div.trigger("audio loaded");
     });
+}
