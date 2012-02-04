@@ -6,19 +6,17 @@
     "private": true,
 
     "dependencies": {
-        "config": "0.4.x",
-        "ctype": "0.4.x",
-        "express": "2.5.x",
-        "formidable": "1.0.x",
-        "redis": "0.7.x",
-        "socket.io": "0.8.x",
-        "stache": "0.1.x"
+        "ctype": ">= 0.4.0",
+        "express": ">= 2.5.0",
+        "formidable": ">= 1.0.0",
+        "redis": ">= 0.7.0",
+        "socket.io": ">= 0.8.0",
+        "stache": ">= 0.1.0"
     },
     "devDependencies": {
-        "vows": "0.6.x"
+        "vows": ">= 0.6.x"
     },
 
     "scripts": {
-        "start": "node ./src/languishes.js"
     }
 }

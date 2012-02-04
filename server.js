@@ -2,22 +2,32 @@
 // Chris Koenig <ckoenig@seas.upenn.edu>
 // CIS-400 Senior Design Project
 
-// languishes.js -- Request Routing and Address Handling
+// server.js -- Request Routing and Address Handling
 
-var config = require("config"),
-    crypto = require("crypto"),
+var crypto = require("crypto"),
     express = require("express"),
     fs = require("fs"),
     formidable = require("formidable"),
     path = require("path"),
     redis = require("redis"),
     util = require("util"),
-    wav = require("./wav.js");
+    wav = require("./src/wav.js");
 
 var db = redis.createClient();
 db.on("error", function (err) {
     console.log("Redis error: " + err);
 });
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+var config = {
+    port: 3000,
+
+    data_dir: __dirname + "/site/data/",
+    static_dir: __dirname + "/site/static/",
+    views_dir: __dirname + "/src/views/"
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Express Configuration ///////////////////////////////////////////////////////
@@ -32,7 +42,7 @@ io.sockets.on("connection", function (socket) {
 });
 
 languishes.configure(function() {
-    languishes.set("views", config.fs.root_dir + "src/views/");
+    languishes.set("views", config.views_dir);
 
     // Use mustache templating for .html files, via the stache module.
     languishes.set("view engine", "mustache");
@@ -47,7 +57,7 @@ languishes.configure(function() {
     languishes.use(express.bodyParser());
 
     languishes.use(express.logger({ format: ":method :url" }));
-    languishes.use(express.static(config.fs.static_dir));
+    languishes.use(express.static(config.static_dir));
 });
 
 languishes.configure("dev", function() {
@@ -92,7 +102,7 @@ languishes.get("/record", function (req, res) {
 });
 
 languishes.get("/clips", function (req, res) {
-    fs.readdir(config.fs.data_dir, function (err, files) {
+    fs.readdir(config.data_dir, function (err, files) {
         if (err) {
             res.writeHead(500, { "content-type": "text/plain" });
             res.end("Server error: " + err);
@@ -112,7 +122,7 @@ languishes.get("/clips", function (req, res) {
 });
 
 languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
-    var filename = config.fs.data_dir + req.params[0] + ".wav";
+    var filename = config.data_dir + req.params[0] + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
@@ -141,7 +151,7 @@ languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
 });
 
 languishes.get(/^\/clip\/([^\/]+)$/, function (req, res) {
-    var filename = config.fs.data_dir + req.params[0] + ".wav";
+    var filename = config.data_dir + req.params[0] + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
             res.writeHead(404, { "content-type": "text/plain" });
@@ -153,7 +163,7 @@ languishes.get(/^\/clip\/([^\/]+)$/, function (req, res) {
 });
 
 languishes.get("/clip/:id/data", function (req, res) {
-    var filename = config.fs.data_dir + req.params.id + ".wav";
+    var filename = config.data_dir + req.params.id + ".wav";
     wav.parse_wav(filename,
         function (err) {
             res.writeHead(500, { "content-type": "text/plain" });
@@ -169,7 +179,7 @@ languishes.get("/clip/:id/data", function (req, res) {
 });
 
 languishes.get("/clip/:id/info", function (req, res) {
-    var filename = config.fs.data_dir + req.params.id + ".wav";
+    var filename = config.data_dir + req.params.id + ".wav";
     wav.parse_wav(filename,
         function (err) {
             res.writeHead(500, { "content-type": "text/plain" });
@@ -187,14 +197,14 @@ languishes.get("/clip/:id/info", function (req, res) {
 });
 
 languishes.get("/clip/:id/spectrogram", function (req, res) {
-    var filename = config.fs.data_dir + req.params.id + ".wav";
-    var cmd = "sox \"" + filename + "\" -n spectrogram -x 1280 -y 800 -m -r -l -o \"" + config.fs.data_dir + "/spectrogram.png\"";
+    var filename = config.data_dir + req.params.id + ".wav";
+    var cmd = "sox \"" + filename + "\" -n spectrogram -x 1280 -y 800 -m -r -l -o \"" + config.data_dir + "/spectrogram.png\"";
     console.log(cmd);
     require("child_process").exec(cmd, function (error, stdout, stderr) {
         console.log("stdout: " + stdout);
         console.log("stderr: " + stderr);
         if (error === null) {
-            res.sendfile(config.fs.data_dir + "/spectrogram.png");
+            res.sendfile(config.data_dir + "/spectrogram.png");
         } else {
             console.log("sox exec error: " + error);
         }
@@ -238,7 +248,7 @@ languishes.post("/upload", function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // Server Startup //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-//languishes.clip_library = ClipLibrary(config.fs.data_dir);
-languishes.listen(config.server.port);
+//languishes.clip_library = ClipLibrary(config.data_dir);
+languishes.listen(config.port);
 console.log("Express server listening on port %d in %s mode",
             languishes.address().port, languishes.settings.env);
