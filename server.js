@@ -249,6 +249,6 @@ languishes.post("/upload", function (req, res) {
 // Server Startup //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //languishes.clip_library = ClipLibrary(config.data_dir);
-languishes.listen(config.port);
+languishes.listen(process.env.npm_package_config_port);
 console.log("Express server listening on port %d in %s mode",
             languishes.address().port, languishes.settings.env);
