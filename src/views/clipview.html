@@ -66,10 +66,10 @@
   <script src="/socket.io/socket.io.js"></script>
 
   <script src="/clipaudio.js"></script>
-  <script src="/clipviewer.js"></script>
   <script src="/selection.js"></script>
   <script src="/spectrogram.js"></script>
   <script src="/waveform.js"></script>
+  <script src="/clipviewer.js"></script>
 
   <center>
       <img id="spectrogram" src="{{clipid}}/spectrogram">
@@ -86,7 +86,7 @@
           $(this).css("cursor", "auto");
       }); */
 
-      var clip_viewer = new ClipViewer("waveform", "{{clipid}}");
+      var clip_viewer = new ClipViewer("{{clipid}}", "waveform");
 
       /*
 

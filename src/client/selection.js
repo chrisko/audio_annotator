@@ -8,7 +8,7 @@ function Selection(div) {
     this.div = div;
     this.current_selection = null;
 
-    div.bind("mousedown.selection", this.emit(begin_new_selection));
+    div.bind("mousedown.selection", this.begin_new_selection);
 }
 
 Selection.prototype.begin_new_selection = function (event) {

@@ -22,12 +22,14 @@ function ClipAudio(div, clip_id) {
     var clip_data = $.getJSON("/clip/" + clip_id + "/data")
     .error(function (xhr, err) {
         console.log("error getting data: " + err);
-        this.div.trigger("audio error");
+        console.log("audio error");
+        div.trigger("audio error");
     })
     .success(function (clip_data, stat, xhr) {
         // Store this data array as a property of the SoundManager clip:
         this.data = clip_data;
 
-        this.div.trigger("audio loaded");
+        console.log("audio loaded");
+        div.trigger("audio loaded");
     });
 }
