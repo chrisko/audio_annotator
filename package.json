@@ -22,6 +22,7 @@
     },
 
     "scripts": {
-        "postinstall": "./scripts/install.sh"
+        "postinstall": "./scripts/install.sh",
+        "prestart": "./scripts/install.sh"
     }
 }

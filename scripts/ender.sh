@@ -1,9 +1,10 @@
 cat /dev/null > site/static/languishes.js
 for FILE in `ls src/client/*.js`; do
-    echo "Compiling $FILE..."
-    cat $FILE | closure > /dev/null
-    [[ $? -gt 0 ]] && exit 1
+    if [[ $npm_lifecycle_event != "prestart" ]]; then
+        echo "Compiling $FILE..."
+        cat $FILE | closure >> site/static/`basename $FILE ".js"`-min.js
+        [[ $? -gt 0 ]] && exit 1
+    fi
 
-    cat $FILE | closure >> site/static/`basename $FILE ".js"`-min.js
     cp $FILE site/static/`basename $FILE`
 done
