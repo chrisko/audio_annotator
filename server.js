@@ -11,7 +11,7 @@ var crypto = require("crypto"),
     path = require("path"),
     redis = require("redis"),
     util = require("util"),
-    wav = require("./src/wav.js");
+    wav = require("./src/server/wav.js");
 
 var db = redis.createClient();
 db.on("error", function (err) {
