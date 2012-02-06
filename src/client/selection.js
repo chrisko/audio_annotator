@@ -30,8 +30,8 @@ Selection.prototype.update_selection = function (event) {
     var start = this.current_selection[0];
     this.current_selection = [ start, event.pageX - this.offsetLeft ];
 
-    // In case anyone's listening, trigger the "selection updated" event:
-    this.div.trigger("selection updated");
+    // In case anyone's listening, trigger the "selection_updated" event:
+    this.div.trigger("selection_updated");
 };
 
 Selection.prototype.end_selection = function (event) {
@@ -42,8 +42,8 @@ Selection.prototype.end_selection = function (event) {
     // Get rid of the "mousemove" event we registered above:
     this.div.unbind("mousemove.selection", this.update_selection);
 
-    // And trigger the "new selection" event for the listeners out there:
-    this.div.trigger("new selection");
+    // And trigger the "new_selection" event for the listeners out there:
+    this.div.trigger("new_selection");
 };
 
 Selection.prototype.get_current_selection = function () {

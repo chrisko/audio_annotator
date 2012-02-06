@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<html>
 <head>
   <title>{{clipid}}</title>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -53,29 +53,30 @@
 
 <body>
 
-  <!-- Include jQuery from Media Temple's jQuery CDN -->
-  <script src="/jquery.js"></script>
-
-  <!-- Grab SoundManager2 for managing the audio -->
-  <script src="/soundmanager2.js"></script>
-
-  <!-- And grab Raphael for the waveform visualization -->
-  <script src="/raphael.js"></script>
-
-  <!-- socket.io -->
-  <script src="/socket.io/socket.io.js"></script>
-
-  <script src="/clipaudio.js"></script>
-  <script src="/selection.js"></script>
-  <script src="/spectrogram.js"></script>
-  <script src="/waveform.js"></script>
-  <script src="/clipviewer.js"></script>
+  <!-- DOM Elements -->
+  <div id="error"></div>
 
   <center>
       <img id="spectrogram" src="{{clipid}}/spectrogram">
       <div id="waveform"></div>
   </center>
 
+  <!-- Third-party JavaScript libraries -->
+  <script src="/jquery.js"></script>
+  <script src="/soundmanager2.js"></script>
+  <script src="/raphael.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/underscore.js"></script>
+  <script src="/backbone.js"></script>
+
+  <!-- My own JavaScript libraries -->
+  <script src="/clipaudio.js"></script>
+  <script src="/selection.js"></script>
+  <script src="/spectrogram.js"></script>
+  <script src="/waveform.js"></script>
+  <script src="/clipviewer.js"></script>
+
+  <!-- And here's how this page hooks into the above libraries -->
   <script type="text/javascript" charset="utf-8">
       "use strict";
 
@@ -86,74 +87,9 @@
           $(this).css("cursor", "auto");
       }); */
 
-      var clip_viewer = new ClipViewer("{{clipid}}", "waveform");
-
-      /*
-
-      soundManager.consoleOnly = true;
-      soundManager.debugMode = true;
-      soundManager.url = "/";
-      soundManager.useFastPolling = true;
-      soundManager.useHighPerformance = true;
-
-      soundManager.onready(function () {
-          // This clip id, which identifies the audio clip, is something we
-          // drop in via template upon serving the page.
-          var clip_id = "{{clipid}}";
-          //var socket = io.connect("");  // No arguments means autodiscover.
-          //$("#waveform").mousemove(function (event) {
-          //    socket.emit("mouse move", { t: event.timeStamp,
-          //                                x: event.pageX - this.offsetLeft,
-          //                                y: event.pageY - this.offsetTop });
-          //});
-
-          var clip = soundManager.createSound({
-              id: "clip",
-              url: "/clip/" + clip_id + ".wav",
-              type: "audio/wav",
-              autoLoad: true,
-              whileplaying: function () {
-                  console.log("readyState: " + this.readyState);
-                  console.log("isBuffering: " + this.isBuffering);
-                  // Trigger our custom event, which we'll handle later on:
-                  $("#waveform").trigger("update_play_marker",
-                                         [ this.position, this.duration ]);
-              }
-          });
-
-          $("#waveform").bind("mousedown", function (event) {
-              console.log("mouse down!");
-          });
-
-          $("#waveform").bind("mouseup", function (event) {
-              console.log("mouse up!");
-          });
-
-          var clip_data = $.getJSON("/clip/" + clip_id + "/data")
-          .error(function (xhr, err) { console.log("error getting data: " + err); })
-          .success(function (clip_data, stat, xhr) {
-              // Store this data array as a property of the SoundManager clip:
-              clip.data = clip_data;
-
-              var waveform = new Waveform(clip);
-              waveform.width = $("#waveform").width();
-              waveform.height = $("#waveform").height();
-
-              waveform.render("waveform");
-
-              $("#waveform").on("update_play_marker", function (e, pos, dur) {
-                  waveform.update_play_marker(pos, dur);
-              });
-          });
-
-          // Capture the space bar to toggle play/pause.
-          $("body").keypress(function (e) {
-              // Different browsers do different things:
-              var key = e.which || e.keyCode || e.keyChar;
-              if (key == 32)
-                  clip.togglePause();
-          });
-      }); */
+      $(document).ready(function () {
+          var clip_viewer = new ClipViewer("waveform", "{{clipid}}");
+      });
   </script>
 </body>
 

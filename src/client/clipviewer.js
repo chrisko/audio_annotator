@@ -1,7 +1,7 @@
 // Chris Koenig <ckoenig@seas.upenn.edu>
 // CIS-400 Senior Design Project
 
-function ClipViewer(clip_id, div_name) {
+function ClipViewer(div_name, clip_id) {
     //assert(typeof(clip_id) === "string");
     //assert(typeof(div_name) === "string");
 
@@ -13,8 +13,18 @@ function ClipViewer(clip_id, div_name) {
     this.div = $("#" + div_name);
     //assert(this.div.length);
 
-    this.audio = new ClipAudio(this.div, clip_id);
+    this.audio = new ClipAudio(div_name, clip_id);
     this.selection = new Selection(this.div);
     this.spectrogram = null;
     this.waveform = null;
+
+    // Capture the space bar to toggle play/pause.
+    // Delegated to the waveform div, which is who we want handling it:
+    $("body").bind("keypress", function (e) {
+        // Different browsers do different things. Story of my life.
+        var key = e.which || e.keyCode || e.keyChar;
+        if (key == 32) {
+            $("#waveform").trigger("play_audio");
+        }
+    });
 }
