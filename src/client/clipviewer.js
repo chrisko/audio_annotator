@@ -1,6 +1,24 @@
 // Chris Koenig <ckoenig@seas.upenn.edu>
 // CIS-400 Senior Design Project
 
+var ClipView = Backbone.View.extend({
+    el: $("#waveform"),
+    template: "blah",
+    render: function () {
+        var sg = this;
+        this.el.fadeOut("fast", function () {
+            sg.el.empty();
+            // Templatize
+            sg.el.fadeIn("fast");
+        });
+
+        return this;  // To enable chained calls.
+    },
+
+    events: {
+    },
+});
+
 function ClipViewer(div_name, clip_id) {
     //assert(typeof(clip_id) === "string");
     //assert(typeof(div_name) === "string");

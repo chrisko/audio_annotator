@@ -7,8 +7,8 @@ soundManager.url = "/";
 soundManager.useFastPolling = true;
 soundManager.useHighPerformance = true;
 
-soundManager.ontimeout(function (status) {
-    $("#error").append("SoundManager2 timed out.");
+soundManager.ontimeout(function (status_msg) {
+    $("#error").append("SoundManager2 timed out: " + status_msg);
 });
 
 function ClipAudio(div_name, clip_id) {
@@ -28,24 +28,20 @@ function ClipAudio(div_name, clip_id) {
 
     // Simultaneously, grab the audio data as a JSON array:
     var clip_data = $.getJSON("/clip/" + clip_id + "/data")
-    .error(this.on_error.bind(this))
-    .success(this.on_success.bind(this));
-}
+    .error(function (xhr, err) {
+        $("#error").append("<br>Error retrieving audio data: " + err);
+    })
+    .success(function (clip_data, stat, xhr) {
+        // Store this data array as a property of the SoundManager clip:
+        $("#waveform").data = clip_data;
+        this.div.trigger("audio_data_loaded", this.data);
 
-ClipAudio.prototype.on_error = function (xhr, err) {
-    $("#error").append("<br>Error retrieving audio data: " + err);
-}
+        this.div.bind("play_audio", function () {
+            console.log(this);
+            if (this.sound)
+                this.sound.togglePause();
 
-ClipAudio.prototype.on_success = function (clip_data, stat, xhr) {
-    // Store this data array as a property of the SoundManager clip:
-    $("#waveform").data = clip_data;
-    this.div.trigger("audio_data_loaded", this.data);
-
-    this.div.bind("play_audio", function () {
-        console.log(this);
-        if (this.sound)
-            this.sound.togglePause();
-
-        //return false;  // Stop event propagation.
+            //return false;  // Stop event propagation.
+        });
     });
-};
+}

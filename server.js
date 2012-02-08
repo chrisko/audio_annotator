@@ -36,7 +36,7 @@ var languishes = express.createServer();
 var io = require("socket.io").listen(languishes);
 
 io.sockets.on("connection", function (socket) {
-    socket.on("mouse move", function (data) {
+    socket.on("mouse_move", function (data) {
         console.log("[" + data.t + "] x: " + data.x + ", y: " + data.y);
     });
 });

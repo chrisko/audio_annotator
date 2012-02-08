@@ -21,3 +21,19 @@ https://github.com/ColinHebert/homebrew/commit/b0c028150f6aac178e1736031f86c6654
 http://www.danielbaulig.de/socket-ioexpress/
 
 http://stackoverflow.com/questions/1619152/how-to-create-rest-urls-without-verbs/1619677#1619677
+
+http://speakertext.com/captionbox
+
+http://addyosmani.com/blog/building-spas-jquerys-best-friends/
+
+Models:
+  Clip
+  Segment
+
+Collections:
+  ClipList
+  SegmentList
+
+Views:
+  ClipListView
+  ClipView
