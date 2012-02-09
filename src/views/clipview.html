@@ -6,49 +6,7 @@
   <meta name="author" content="Chris Koenig" />
 
   <link rel="stylesheet" type="text/css" href="/css/reset.css" />
-  <style type="text/css">
-      * {
-          /* border:1px solid red !important; */
-          -webkit-box-sizing:border-box; /* Safari/Chrome, other WebKit */
-          -moz-box-sizing:border-box;    /* Firefox, other Gecko */
-          box-sizing:border-box;         /* Opera/IE 8+ */
-      }
-
-      html {
-          height: 100%;
-      }
-
-      body {
-          margin:0;
-          padding:0;
-          height:100%;
-          font:100% normal verdana,arial,tahoma,"sans serif";
-      }
-
-      #spectrogram {
-          position:absolute;
-          top:0;
-          left:0;
-          height:100%;
-          width:100%;
-          visibility:visible;
-          padding:20px 20px 20px 20px;
-      }
-
-      #waveform {
-          position:absolute;
-          top:0;
-          left:0;
-          z-index:1000;
-          height:100%;
-          width:100%;
-          opacity:0.15;
-          -moz-opacity:0.15;
-          filter:alpha(opacity=15);
-          visibility:visible;
-          padding:20px 20px 20px 20px;
-      }
-   </style>
+  <link rel="stylesheet" type="text/css" href="/css/languishes.css" />
 </head>
 
 <body>
@@ -82,13 +40,6 @@
   <!-- And here's how this page hooks into the above libraries -->
   <script type="text/javascript" charset="utf-8">
       "use strict";
-
-      /*$("#waveform").hover(function() {
-          // Other cursor options: "move", "col-resize", "text"
-          $(this).css("cursor", "crosshair");
-      }, function() {
-          $(this).css("cursor", "auto");
-      }); */
 
       $(document).ready(function () {
           var clip_viewer = new ClipViewer("waveform", "{{clipid}}");

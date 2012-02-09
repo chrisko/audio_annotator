@@ -1,6 +1,13 @@
 // Chris Koenig <ckoenig@seas.upenn.edu>
 // CIS-400 Senior Design Project
 
+/*$("#waveform").hover(function() {
+    // Other cursor options: "move", "col-resize", "text"
+    $(this).css("cursor", "crosshair");
+}, function() {
+    $(this).css("cursor", "auto");
+}); */
+
 var ClipView = Backbone.View.extend({
     el: $("#waveform"),
     template: "blah",

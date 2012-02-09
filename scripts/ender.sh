@@ -19,3 +19,5 @@ for FILE in `ls src/client/*.js`; do
     # Copy the raw (dev) version of the file over, regardless:
     cp $FILE site/static/`basename $FILE`
 done
+
+cp src/static/css/*.css ./site/static/css/
