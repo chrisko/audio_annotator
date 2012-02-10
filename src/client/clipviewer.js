@@ -23,7 +23,7 @@ var ClipView = Backbone.View.extend({
     },
 
     events: {
-    },
+    }
 });
 
 function ClipViewer(div_name, clip_id) {

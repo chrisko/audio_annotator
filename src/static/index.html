@@ -14,16 +14,12 @@
     <body>
         <div id="container">
             <div id="header">
-                <h1>
-                    <a href="index.html">Languishes</a>
-                </h1>
-                <h3>
-                    <a href="http://www.seas.upenn.edu/~ckoenig">Chris Koenig</a>
-                </h3>
             </div>
 
             <div id="main">
-                <div class="test">No JS</div>
+            </div>
+
+            <div id="footer">
             </div>
         </div>
 
@@ -38,13 +34,15 @@
             .script("/socket.io/socket.io.js")
             .script("/backbone.js").wait()
             // My own scripts:
+            .script("/app.js")
             .script("/clipaudio.js")
             .script("/selection.js")
             .script("/spectrogram.js")
             .script("/waveform.js")
             .script("/clipviewer.js")
             .wait(function () {
-                // ?
+                languishes = new Languishes();
+                Backbone.history.start();
             });
         </script>
     </body>

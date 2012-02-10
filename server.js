@@ -89,12 +89,8 @@ languishes.get("/api/clips", function (req, res) {
 // Request Handling Methods ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 languishes.get("/", function (req, res) {
-    res.writeHead(200, { "content-type": "text/html" });
-    res.write("<html><head><title>languishes.net</title></head>\n");
-    res.write("<body><a href=\"/clips\">clips</a><br>\n");
-    res.write("<a href=\"/record\">record</a><br>\n");
-    res.write("</body></html>")
-    res.end();
+    //res.writeHead(200, { "content-type": "text/html" });
+    res.sendfile(config.static_dir + "index.html");
 });
 
 languishes.get("/record", function (req, res) {
