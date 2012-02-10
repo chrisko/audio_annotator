@@ -54,6 +54,11 @@ if [[ ! -f backbone.js || ! -f backbone-min.js ]]; then
     $CURLCMD $BACKBONE_URL/backbone-min.js > backbone-min.js
 fi
 
+if [[ ! -f LAB.js ]]; then
+    LABJS_URL=https://raw.github.com/getify/LABjs
+    $CURLCMD $LABJS_URL/master/LAB.js > LAB.js
+fi
+
 ## CSS #########################################################################
 mkdir css &> /dev/null || true
 cd css

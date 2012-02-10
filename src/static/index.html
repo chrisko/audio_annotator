@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="author" content="Chris Koenig" />
+
+        <title>Languishes</title>
+
+        <!-- CSS -->
+        <link rel="stylesheet" type="text/css" href="/css/reset.css" />
+        <link rel="stylesheet" type="text/css" href="/css/languishes.css" />
+        <link rel="stylesheet" type="text/css" href="/css/page-player.css" />
+
+    <body>
+        <div id="container">
+            <div id="header">
+                <h1>
+                    <a href="index.html">Languishes</a>
+                </h1>
+                <h3>
+                    <a href="http://www.seas.upenn.edu/~ckoenig">Chris Koenig</a>
+                </h3>
+            </div>
+
+            <div id="main">
+                <div class="test">No JS</div>
+            </div>
+        </div>
+
+        <script src="LAB.js"></script>
+        <script>
+            $LAB
+            // Third-party scripts:
+            .script("/jquery.js")
+            .script("/underscore.js").wait()
+            .script("/soundmanager2.js")
+            .script("/raphael.js")
+            .script("/socket.io/socket.io.js")
+            .script("/backbone.js").wait()
+            // My own scripts:
+            .script("/clipaudio.js")
+            .script("/selection.js")
+            .script("/spectrogram.js")
+            .script("/waveform.js")
+            .script("/clipviewer.js")
+            .wait(function () {
+                // ?
+            });
+        </script>
+    </body>
+</html>
