@@ -9,17 +9,19 @@ var crypto = require("crypto"),
     fs = require("fs"),
     formidable = require("formidable"),
     path = require("path"),
-    redis = require("redis"),
-    util = require("util"),
+    util = require("util");
+
+var ClipLibrary = require("./src/server/cliplibrary.js"),
+    Worker = require("./src/server/worker.js"),
     wav = require("./src/server/wav.js");
 
-var db = redis.createClient();
-db.on("error", function (err) {
+var redis = require("redis").createClient();
+redis.on("error", function (err) {
     console.log("Redis error: " + err);
 });
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+// Configuration ///////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 var config = {
     port: 3000,
@@ -74,9 +76,9 @@ languishes.configure("prod", function() {
 ////////////////////////////////////////////////////////////////////////////////
 // API Handling Methods ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-db.sadd("clips", "testing");
+redis.sadd("clips", "testing");
 languishes.get("/api/clips", function (req, res) {
-    db.smembers("clips", function (err, replies) {
+    redis.smembers("clips", function (err, replies) {
         console.log(replies);
         res.json(replies);
     });
@@ -244,7 +246,11 @@ languishes.post("/upload", function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // Server Startup //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-//languishes.clip_library = ClipLibrary(config.data_dir);
+// Synchronously initialize the clip library:
+languishes.clip_library = new ClipLibrary(config.data_dir, redis);
+// TODO: Start workers.
+languishes.worker = new Worker(languishes.clip_library);
+
 languishes.listen(process.env.npm_package_config_port);
 console.log("Express server listening on port %d in %s mode",
             languishes.address().port, languishes.settings.env);

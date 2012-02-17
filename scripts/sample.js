@@ -6,7 +6,7 @@ var assert = require("assert"),
     path = require("path");
 
 var CLIP_DURATION = 5;
-var OUTPUT_DIR = "site/data";
+var OUTPUT_DIR = "site/data/new";
 
 ////////////////////////////////////////////////////////////////////////////////
 function splice_file(filename, audio_info) {
