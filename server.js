@@ -76,16 +76,17 @@ languishes.configure("prod", function() {
 ////////////////////////////////////////////////////////////////////////////////
 // API Handling Methods ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-redis.sadd("clips", "testing");
-languishes.get("/api/clips", function (req, res) {
-    redis.smembers("clips", function (err, replies) {
-        console.log(replies);
-        res.json(replies);
+languishes.get("/clips", function (req, res) {
+    redis.keys("clip:*:filename", function (err, replies) {
+        var clip_ids = [ ];
+        for (r in replies) {
+            var matches = replies[r].match(/^clip:(.+):filename$/);
+            clip_ids.push({ id: matches[1] });
+        }
+
+        res.json(clip_ids);
     });
 });
-
-//languishes.get(/\/api\/clip\/([^\.\/]+)\/samples\/?$/, function (req, res) {
-//    re
 
 ////////////////////////////////////////////////////////////////////////////////
 // Request Handling Methods ////////////////////////////////////////////////////
@@ -97,26 +98,6 @@ languishes.get("/", function (req, res) {
 
 languishes.get("/record", function (req, res) {
     res.render("record.html", { });
-});
-
-languishes.get("/clips", function (req, res) {
-    fs.readdir(config.data_dir, function (err, files) {
-        if (err) {
-            res.writeHead(500, { "content-type": "text/plain" });
-            res.end("Server error: " + err);
-            throw err;
-        } else {
-            var clips = [ ];
-            for (i in files) {
-                clips.push({
-                    basename: path.basename(files[i], ".wav"),
-                    filename: files[i],
-                });
-            }
-
-            res.render("cliplist.html", { "clips": clips });
-        }
-    });
 });
 
 languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
@@ -148,6 +129,7 @@ languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
     });
 });
 
+/*
 languishes.get(/^\/clip\/([^\/]+)$/, function (req, res) {
     var filename = config.data_dir + req.params[0] + ".wav";
     path.exists(filename, function (exists) {
@@ -159,8 +141,9 @@ languishes.get(/^\/clip\/([^\/]+)$/, function (req, res) {
         }
     });
 });
+*/
 
-languishes.get("/clip/:id/data", function (req, res) {
+languishes.get("/clips/:id/data", function (req, res) {
     var filename = config.data_dir + req.params.id + ".wav";
     wav.parse_wav(filename,
         function (err) {
@@ -176,7 +159,7 @@ languishes.get("/clip/:id/data", function (req, res) {
         });
 });
 
-languishes.get("/clip/:id/info", function (req, res) {
+languishes.get("/clips/:id/info", function (req, res) {
     var filename = config.data_dir + req.params.id + ".wav";
     wav.parse_wav(filename,
         function (err) {
@@ -194,8 +177,8 @@ languishes.get("/clip/:id/info", function (req, res) {
         });
 });
 
-languishes.get("/clip/:id/spectrogram", function (req, res) {
-    var filename = config.data_dir + req.params.id + ".wav";
+languishes.get("/clips/:id/spectrogram", function (req, res) {
+    var filename = config.data_dir + "/new/" + req.params.id + ".wav";
     var cmd = "sox \"" + filename + "\" -n spectrogram -x 1280 -y 800 -m -r -l -o \"" + config.data_dir + "/spectrogram.png\"";
     console.log(cmd);
     require("child_process").exec(cmd, function (error, stdout, stderr) {

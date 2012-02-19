@@ -1,5 +1,9 @@
 var Clip = Backbone.Model.extend({
-    urlRoot: "/clips"
+    urlRoot: "/clips",
+    defaults: {
+        "id": null,
+        "name": "(no name)"
+    }
 });
 
 var ClipList = Backbone.Collection.extend({
@@ -20,38 +24,45 @@ var Selection = Backbone.Model.extend({
 var ClipListView = Backbone.View.extend({
     el: $("#main"),
     template: "<ul class=\"playlist dark\">"
-            + "<%= _.each(clips, function (clip) { %>"
-            + "<li><a href=\"clip/<%= id %>\"><%= name %></a></li>"
-            + "<%= }); =>",
+            + "<% _.each(clips, function (clip) { %>"
+              + "<li>"
+                + "<a href=\"#clips/<%= clip.id %>\">"
+                  + "<%= clip.name || clip.id %>"
+                + "</a>"
+              + "</li>"
+            + "<% }); %>",
 
     render: function () {
         var sg = this;
-        this.el.fadeOut("fast", function () {
-            sg.el.empty();
-            $.tmpl(sg.template, sg.model.toArray()).appendTo(sg.el);
-            sg.el.fadeIn("fast");
+        this.$el.fadeOut("fast", function () {
+            sg.$el.empty();
+            var contents = _.template(sg.template, { clips: sg.model.toArray() });
+            sg.$el.html(contents);
+            sg.$el.fadeIn("fast");
         });
         return this;
     }
 });
 
-/*
 var ClipView = Backbone.View.extend({
     el: $("#main"),
-    template: $("#clipViewTemplate"),
 
-window.JST["clips/view"] = _.template(
-    "<center>"
-  + "<img id=\"spectrogram\" src=\"<%= id %>/spectrogram\">"
-  + "<div id=\"waveform\"></div>"
-  + "</center>");
+    template: "<center>"
+              + "<img id=\"spectrogram\" src=\"clips/<%= id %>/spectrogram\">"
+              + "<div id=\"waveform\"></div>"
+            + "</center>",
 
     render: function () {
         var sg = this;
-        this.el.fadeOut("fast", function () {
-            sg.el.empty();
-            $.tmpl(sg.template, sg.model
-*/
+        this.$el.fadeOut("fast", function () {
+            sg.$el.empty();
+            var contents = _.template(sg.template, { id: sg.id });
+            sg.$el.html(contents);
+            sg.$el.fadeIn("fast");
+        });
+        return this;
+    }
+});
 
 var Languishes = Backbone.Router.extend({
     _cliplist: null,  // The list of all clips, returned by the server.
@@ -72,7 +83,6 @@ var Languishes = Backbone.Router.extend({
             return this;
 
         var ws = this;
-
         // If we've not yet loaded the clips, make that AJAX call here:
         $.ajax({
             url: "clips",
@@ -90,16 +100,16 @@ var Languishes = Backbone.Router.extend({
 
     // Handle the "no fragment" (or I guess empty fragment) page rendering.
     index: function () {
+        this._currentclip = null;
+        //assert(this._cliplistview);  // Should have been initialized above.
         this._cliplistview.render();
     },
 
     // Handle the "#clips/12345" fragment rendering:
     hashclips: function (id) {
         this._currentclip = id;
-        //this._segments = new
-
-        //if (this._selection
-        //this._blah.render();
+        this._clipview = new ClipView({ id: id });
+        this._clipview.render();
     }
 
     // Handle the "#clips/12345/segment

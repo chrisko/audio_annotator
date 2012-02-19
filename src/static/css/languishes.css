@@ -1,5 +1,7 @@
 * {
     /* border:1px solid red !important; */
+
+    /* See http://paulirish.com/2012/box-sizing-border-box-ftw */
     -webkit-box-sizing:border-box; /* Safari/Chrome, other WebKit */
     -moz-box-sizing:border-box;    /* Firefox, other Gecko */
     box-sizing:border-box;         /* Opera/IE 8+ */
