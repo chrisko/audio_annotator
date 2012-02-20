@@ -19,7 +19,7 @@ function splice_file(filename, audio_info) {
 
     // Pick a random start point, and splice the audio right there:
     var start = Math.floor(Math.random() * (samples - duration));
-    var cmd = "sox \"" + filename + "\" \"site/data/" + basename + "\""
+    var cmd = "sox \"" + filename + "\" \"" + OUTPUT_DIR + "/" + basename + "\""
             + " trim " + start + "s " + duration + "s";
 
     console.log(cmd);

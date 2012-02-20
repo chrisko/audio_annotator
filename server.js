@@ -178,7 +178,7 @@ languishes.get("/clips/:id/info", function (req, res) {
 });
 
 languishes.get("/clips/:id/spectrogram", function (req, res) {
-    var filename = config.data_dir + "/new/" + req.params.id + ".wav";
+    var filename = config.data_dir + req.params.id;
     var cmd = "sox \"" + filename + "\" -n spectrogram -x 1280 -y 800 -m -r -l -o \"" + config.data_dir + "/spectrogram.png\"";
     console.log(cmd);
     require("child_process").exec(cmd, function (error, stdout, stderr) {
@@ -195,22 +195,6 @@ languishes.get("/clips/:id/spectrogram", function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // Uploading Clips /////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-function import_new_upload(new_filename) {
-    // We'll piece this SHA-1 sum together as data streams in:
-    var sha1sum = crypto.createHash("sha1");
-
-    // Open the newly-uploaded file
-    var stream = fs.ReadStream(new_filename);
-    stream.on("data", function (data) {
-        sha1sum.update(data);
-    });
-
-    stream.on("end", function () {
-        var hexsum = sha1sum.digest("hex");
-        console.log(hexsum + " " + new_filename);
-    });
-}
-
 languishes.post("/upload", function (req, res) {
     // Use Felix Geisendörfer's "formidable" to handle multipart uploads:
     var form = new formidable.IncomingForm();
@@ -222,7 +206,7 @@ languishes.post("/upload", function (req, res) {
         res.end(util.inspect({ fields: fields, files: files }));
 
         file = files["recorded_audio_clip"];
-        import_new_upload(file.path);
+        //import_new_upload(file.path);
     });
 });
 
