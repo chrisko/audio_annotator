@@ -58,7 +58,7 @@ languishes.configure(function() {
     // form, or JSON data) and store the parameters is req.body.
     languishes.use(express.bodyParser());
 
-    languishes.use(express.logger({ format: ":method :url" }));
+    //languishes.use(express.logger({ format: ":method :url" }));
     languishes.use(express.static(config.static_dir));
 });
 
@@ -77,14 +77,8 @@ languishes.configure("prod", function() {
 // API Handling Methods ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 languishes.get("/clips", function (req, res) {
-    redis.keys("clip:*:filename", function (err, replies) {
-        var clip_ids = [ ];
-        for (r in replies) {
-            var matches = replies[r].match(/^clip:(.+):filename$/);
-            clip_ids.push({ id: matches[1] });
-        }
-
-        res.json(clip_ids);
+    languishes.clip_library.get_all_clip_ids(function (ids) {
+        res.json(ids);
     });
 });
 
@@ -92,7 +86,6 @@ languishes.get("/clips", function (req, res) {
 // Request Handling Methods ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 languishes.get("/", function (req, res) {
-    //res.writeHead(200, { "content-type": "text/html" });
     res.sendfile(config.static_dir + "index.html");
 });
 
@@ -100,7 +93,7 @@ languishes.get("/record", function (req, res) {
     res.render("record.html", { });
 });
 
-languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
+languishes.get(/^\/clips\/([^\/]+)\.wav$/, function (req, res) {
     var filename = config.data_dir + req.params[0] + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
@@ -129,34 +122,22 @@ languishes.get(/^\/clip\/([^\/]+)\.wav$/, function (req, res) {
     });
 });
 
-/*
-languishes.get(/^\/clip\/([^\/]+)$/, function (req, res) {
-    var filename = config.data_dir + req.params[0] + ".wav";
-    path.exists(filename, function (exists) {
-        if (!exists) {
-            res.writeHead(404, { "content-type": "text/plain" });
-            res.end("No such file: " + filename)
-        } else {
-            res.render("clipview.html", { "clipid": req.params[0] });
-        }
-    });
-});
-*/
-
 languishes.get("/clips/:id/data", function (req, res) {
-    var filename = config.data_dir + req.params.id + ".wav";
-    wav.parse_wav(filename,
-        function (err) {
-            res.writeHead(500, { "content-type": "text/plain" });
-            res.end(err);
-        },
-        function (wav) {
-            // Check for "begin" and "end" query string parameters:
-            var begin = req.param("begin", 0);
-            var end = req.param("end", wav.num_samples);
-            // And return the samples as a JSON array:
-            res.json(wav.get_samples([ begin, end ]));
-        });
+    languishes.clip_library.get_clip_location(req.params.id, function (filename) {
+        wav.parse_wav(filename,
+            function (err) {
+                res.writeHead(500, { "content-type": "text/plain" });
+                res.end(err);
+            },
+            function (wav) {
+                // Check for "begin" and "end" query string parameters:
+                var begin = req.param("begin", 0);
+                var end = req.param("end", wav.num_samples);
+                // And return the samples as a JSON array:
+                res.json(wav.get_samples([ begin, end ]));
+            }
+        );
+    });
 });
 
 languishes.get("/clips/:id/info", function (req, res) {
@@ -180,10 +161,7 @@ languishes.get("/clips/:id/info", function (req, res) {
 languishes.get("/clips/:id/spectrogram", function (req, res) {
     redis.get("clip:" + req.params.id + ":filename", function (err, filename) {
         var cmd = "sox \"" + filename + "\" -n spectrogram -x 1280 -y 800 -m -r -l -o \"" + config.data_dir + "/spectrogram.png\"";
-        console.log(cmd);
         require("child_process").exec(cmd, function (error, stdout, stderr) {
-            console.log("stdout: " + stdout);
-            console.log("stderr: " + stderr);
             if (error === null) {
                 res.sendfile(config.data_dir + "/spectrogram.png");
             } else {
@@ -216,7 +194,6 @@ languishes.post("/upload", function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // Synchronously initialize the clip library:
 languishes.clip_library = new ClipLibrary(config.data_dir, redis);
-// TODO: Start workers.
 languishes.worker = new Worker(languishes.clip_library);
 
 languishes.listen(process.env.npm_package_config_port);

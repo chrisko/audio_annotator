@@ -53,6 +53,9 @@ var ClipView = Backbone.View.extend({
             + "</center>",
 
     render: function () {
+        // Before any of the view stuff, set up the ClipAudio object:
+        this.clipaudio = new ClipViewer("waveform", this.id);
+
         var sg = this;
         this.$el.fadeOut("fast", function () {
             sg.$el.empty();

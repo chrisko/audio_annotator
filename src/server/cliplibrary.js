@@ -46,11 +46,9 @@ ClipLibrary.prototype.audit_contents = function (laboriously) {
     for (f in files) {
         if (files[f] == "new" || files[f] == "spectrogram.png") continue;
 
-        console.log("file " + files[f]);
         var file_path = this.directory_name + "/" + files[f];
         var extension = path.extname(file_path);
         var basename = path.basename(file_path, extension);
-        console.log(basename);
 
         // Make sure the filename key exists for this clip id, if not there:
         this.redis.setnx("clip:" + basename + ":filename", file_path);
@@ -58,7 +56,6 @@ ClipLibrary.prototype.audit_contents = function (laboriously) {
         // Finally, if we're told to laboriously checksum everything, put all
         // those tasks into the redis work queue to run asynchronously.
         if (laboriously) {
-            console.log("pushing new task for file " + files[f] + "...");
             this.redis.lpush("work_queue",
                     JSON.stringify({ op: "verify checksum",
                                      target: file_path,
@@ -132,7 +129,22 @@ ClipLibrary.prototype.add_new_clip = function (clip_filename, cb) {
     });
 };
 
-ClipLibrary.prototype.get_clip_location = function (clip_id) {
+ClipLibrary.prototype.get_all_clip_ids = function (cb) {
+    this.redis.keys("clip:*:filename", function (err, replies) {
+        var clip_ids = [ ];
+        for (r in replies) {
+            var matches = replies[r].match(/^clip:(.+):filename$/);
+            clip_ids.push({ id: matches[1] });
+        }
+
+        cb(clip_ids);
+    });
+};
+
+ClipLibrary.prototype.get_clip_location = function (clip_id, cb) {
+    this.redis.get("clip:" + clip_id + ":filename", function (err, res) {
+        cb(res);
+    });
 };
 
 // Finally, export the ClipLibrary constructor as our module's only hook:
