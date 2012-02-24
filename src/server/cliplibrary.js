@@ -3,7 +3,8 @@
 
 // cliplibrary.js -- Clip Library Manager
 
-var async = require("async"),
+var assert = require("assert"),
+    async = require("async"),
     crypto = require("crypto"),
     fs = require("fs"),
     path = require("path"),
@@ -92,36 +93,42 @@ ClipLibrary.prototype.checksum = function (filename, cb) {
     });
 };
 
+ClipLibrary.prototype.checksum_to_id = function (checksum) {
+    assert(checksum.length == 40);
+    // Our id consists of the first eight hex digits
+    return checksum.substr(0, 8);
+};
+
 // Given the filename of a clip, import it into the ClipLibrary.
 // De-duplicates clips via the SHA-1 checksum.
 ClipLibrary.prototype.add_new_clip = function (clip_filename, cb) {
     var sg = this;
-    this.checksum(clip_filename, function (err, result) {
+    this.checksum(clip_filename, function (err, sha1_checksum) {
         if (err) {
-            console.log("Error calculating checksum while adding new clip: " + err);
-            cb();
+            return cb("Error calculating checksum of new clip: " + err);
         }
 
+        // Convert the SHA-1 checksum to the more compressed clip id:
+        var new_clip_id = sg.checksum_to_id(sha1_checksum);
+
         var extension = path.extname(clip_filename);
-        var dbkey = "clip:" + result + ":filename";
+        var dbkey = "clip:" + new_clip_id + ":filename";
         sg.redis.get(dbkey, function (err, res) {
             if (res) {
                 console.log("New file " + clip_filename + " checksum "
-                          + result + " already appears in the library.");
+                          + new_clip_id + " already appears in the library.");
                 fs.unlink(clip_filename, function (err) {
-                    if (err) { console.log(err); }
-                    cb();
+                    return cb(err);
                 });
             } else {
                 var new_file = fs.createReadStream(clip_filename);
-                var imported_name = sg.directory_name + "/" + result + extension;
+                var imported_name = sg.directory_name + "/" + new_clip_id + extension;
                 var imported = fs.createWriteStream(imported_name);
 
                 util.pump(new_file, imported, function () {
                     sg.redis.set(dbkey, imported_name);
                     fs.unlink(clip_filename, function (err) {
-                        if (err) { console.log(err); }
-                        cb();
+                        cb(err);  // Return the error, if any.
                     });
                 });
             }

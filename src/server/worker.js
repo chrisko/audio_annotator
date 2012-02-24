@@ -47,8 +47,13 @@ Worker.prototype.operations = {
             return cb(task, false);
         }
 
-        this.clip_library.add_new_clip(task.target, function () {
-            cb(task, true);
+        this.clip_library.add_new_clip(task.target, function (err) {
+            if (err) {
+                task.error = err;
+                cb(task, false);
+            } else {
+                cb(task, true);
+            }
         });
     }
 };
