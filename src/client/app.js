@@ -73,8 +73,6 @@ var Languishes = Backbone.Router.extend({
     routes: {
         "": "index",
         "clips/:id": "hashclips"
-        //"clips/:id/:start"
-        //"clips/:id/:start/:end"
     },
 
     initialize: function (options) {

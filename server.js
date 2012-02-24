@@ -178,17 +178,18 @@ languishes.get("/clips/:id/info", function (req, res) {
 });
 
 languishes.get("/clips/:id/spectrogram", function (req, res) {
-    var filename = config.data_dir + req.params.id;
-    var cmd = "sox \"" + filename + "\" -n spectrogram -x 1280 -y 800 -m -r -l -o \"" + config.data_dir + "/spectrogram.png\"";
-    console.log(cmd);
-    require("child_process").exec(cmd, function (error, stdout, stderr) {
-        console.log("stdout: " + stdout);
-        console.log("stderr: " + stderr);
-        if (error === null) {
-            res.sendfile(config.data_dir + "/spectrogram.png");
-        } else {
-            console.log("sox exec error: " + error);
-        }
+    redis.get("clip:" + req.params.id + ":filename", function (err, filename) {
+        var cmd = "sox \"" + filename + "\" -n spectrogram -x 1280 -y 800 -m -r -l -o \"" + config.data_dir + "/spectrogram.png\"";
+        console.log(cmd);
+        require("child_process").exec(cmd, function (error, stdout, stderr) {
+            console.log("stdout: " + stdout);
+            console.log("stderr: " + stderr);
+            if (error === null) {
+                res.sendfile(config.data_dir + "/spectrogram.png");
+            } else {
+                console.log("sox exec error: " + error);
+            }
+        });
     });
 });
 

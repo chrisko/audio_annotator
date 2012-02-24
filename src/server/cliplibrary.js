@@ -44,14 +44,16 @@ ClipLibrary.prototype.audit_contents = function (laboriously) {
     //async.filter(fs.readdirSync(this.directory_name), function (filename) { 
     var files = fs.readdirSync(this.directory_name);
     for (f in files) {
-        if (!files[f]) continue;
         if (files[f] == "new" || files[f] == "spectrogram.png") continue;
 
-        var extension = path.extname(files[f]);
-        var basename = path.basename(files[f], extension);
+        console.log("file " + files[f]);
+        var file_path = this.directory_name + "/" + files[f];
+        var extension = path.extname(file_path);
+        var basename = path.basename(file_path, extension);
+        console.log(basename);
 
         // Make sure the filename key exists for this clip id, if not there:
-        this.redis.setnx("clip:" + basename + ":filename", files[f]);
+        this.redis.setnx("clip:" + basename + ":filename", file_path);
 
         // Finally, if we're told to laboriously checksum everything, put all
         // those tasks into the redis work queue to run asynchronously.
@@ -59,7 +61,7 @@ ClipLibrary.prototype.audit_contents = function (laboriously) {
             console.log("pushing new task for file " + files[f] + "...");
             this.redis.lpush("work_queue",
                     JSON.stringify({ op: "verify checksum",
-                                     target: this.directory_name + "/" + files[f],
+                                     target: file_path,
                                      pri: "low" }));
         }
     }
