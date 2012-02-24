@@ -74,19 +74,16 @@ languishes.configure("prod", function() {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
-// API Handling Methods ////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+languishes.get("/", function (req, res) {
+    // Our Backbone.js app is fully contained in the index.html file. It will
+    // load its dependencies and data as required, using the API calls below.
+    res.sendfile(config.static_dir + "index.html");
+});
+
 languishes.get("/clips", function (req, res) {
     languishes.clip_library.get_all_clip_ids(function (ids) {
         res.json(ids);
     });
-});
-
-////////////////////////////////////////////////////////////////////////////////
-// Request Handling Methods ////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-languishes.get("/", function (req, res) {
-    res.sendfile(config.static_dir + "index.html");
 });
 
 languishes.get("/record", function (req, res) {
@@ -131,8 +128,8 @@ languishes.get("/clips/:id/data", function (req, res) {
             },
             function (wav) {
                 // Check for "begin" and "end" query string parameters:
-                var begin = req.param("begin", 0);
-                var end = req.param("end", wav.num_samples);
+                var begin = parseInt(req.param("begin", 0));
+                var end = parseInt(req.param("end", wav.num_samples));
                 // And return the samples as a JSON array:
                 res.json(wav.get_samples([ begin, end ]));
             }
@@ -177,15 +174,20 @@ languishes.get("/clips/:id/spectrogram", function (req, res) {
 languishes.post("/upload", function (req, res) {
     // Use Felix Geisendörfer's "formidable" to handle multipart uploads:
     var form = new formidable.IncomingForm();
-    form.uploadDir = config.fs.data_dir;
+    form.uploadDir = languishes.clip_library.new_uploads_dir;
     form.keepExtensions = true;
 
     form.parse(req, function(err, fields, files) {
-        res.writeHead(200, { "content-type": "text/plain" });
-        res.end(util.inspect({ fields: fields, files: files }));
-
         file = files["recorded_audio_clip"];
-        //import_new_upload(file.path);
+        languishes.clip_library.add_new_clip(file.path, function (err) {
+            if (err) {
+                res.writeHead(500, { "content-type": "text/plain" });
+                res.end(err);
+            } else {
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end(util.inspect({ fields: fields, files: files }));
+            }
+        });
     });
 });
 

@@ -31,7 +31,7 @@ Worker.prototype.operations = {
                 return cb(task, false);
             }
 
-            if (task.target.match(result)) {
+            if (task.target.match(result.substr(0, 8))) {
                 return cb(task, true);
             } else {
                 task.error = "Filename " + task.target + " doesn't match the "
