@@ -49,18 +49,16 @@ var ClipView = Backbone.View.extend({
 
     template: "<center>"
               + "<img id=\"spectrogram\" src=\"clips/<%= id %>/spectrogram\">"
-              + "<div id=\"waveform\"></div>"
+              + "<div id=\"clipvis\"></div>"
             + "</center>",
 
     render: function () {
-        // Before any of the view stuff, set up the ClipAudio object:
-        this.clipaudio = new ClipViewer("waveform", this.id);
-
         var sg = this;
         this.$el.fadeOut("fast", function () {
             sg.$el.empty();
             var contents = _.template(sg.template, { id: sg.id });
             sg.$el.html(contents);
+            sg.clipvis = new ClipViewer("clipvis", sg.id);
             sg.$el.fadeIn("fast");
         });
         return this;

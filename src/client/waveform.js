@@ -9,15 +9,11 @@
 // commonly see, it's based on the maximum amplitude per sample. The "rms" way
 // ("Root Mean Square") looks smoother, since it's based on a windowed average.
 
-function Waveform(clip) {
-    assert(clip.length);
+function Waveform(div_name, clip_audio) {
+    this.div_name = div_name;
+    this.clip_audio = clip_audio;
 
-    // Input:
-    this.clip = clip;
-
-    // Defaults:
-    this.width = 800;
-    this.height = 200;
+    this.div = $("#" + div_name);
     this.method = "peak";
 };
 
@@ -30,12 +26,12 @@ Waveform.prototype.update_play_marker = function (pos, dur) {
         this.raphael.playmarker.clear();
     }
 
-    var starting_x = pos / dur * this.width;
-    var half_second_offset = 500 / this.clip.duration * this.width;
+    var starting_x = pos / dur * this.div.width();
+    var half_second_offset = 500 / this.clip_audio.duration * this.div.width();
 
     // And draw a rectangle where we're currently playing:
     this.raphael.playmarker.push(
-        this.raphael.rect(starting_x - 1, 0, 2, this.height)
+        this.raphael.rect(starting_x - 1, 0, 2, this.div.height())
             .attr({ fill: "red", "stroke-width": 0 })
             .animate({ x: starting_x + half_second_offset, opacity: 0 }, 500, "linear"));
 
@@ -43,21 +39,21 @@ Waveform.prototype.update_play_marker = function (pos, dur) {
 };
 
 Waveform.prototype.draw_waveform = function () {
-    var num_samples = this.clip.data.length;
+    var num_samples = this.clip_audio.data.length;
 
-    if (num_samples < this.width)
+    if (num_samples < this.div.width())
         throw "waveform width is less than the number of samples";
 
     var averages = [ ];
     var highest_average = 0;
-    for (var pixel = 0; pixel < this.width; pixel++) {
-        start_sample = Math.floor(num_samples * pixel / this.width);
-        end_sample = Math.floor(num_samples * (pixel + 1) / this.width);
+    for (var pixel = 0; pixel < this.div.width(); pixel++) {
+        start_sample = Math.floor(num_samples * pixel / this.div.width());
+        end_sample = Math.floor(num_samples * (pixel + 1) / this.div.width());
 
         var max = 0; var total = 0;
         for (i = start_sample; i < end_sample; i++) {
-            var this_sample = this.clip.data[i];
-            total += this.clip.data[i];
+            var this_sample = this.clip_audio.data[i];
+            total += this.clip_audio.data[i];
         }
 
         var this_average = total / (end_sample - start_sample);
@@ -68,9 +64,9 @@ Waveform.prototype.draw_waveform = function () {
                         : highest_average;
     }
 
-    var path_string = "M0 " + (this.height / 2);
-    for (var pixel = 0; pixel < this.width; pixel++) {
-        var dot_height = (this.height / 2) + (this.height / 2)
+    var path_string = "M0 " + (this.div.height() / 2);
+    for (var pixel = 0; pixel < this.div.width(); pixel++) {
+        var dot_height = (this.div.height() / 2) + (this.div.height() / 2)
                        * (averages[pixel] / highest_average);
         path_string += "L" + pixel + " " + dot_height;
     }
@@ -81,27 +77,27 @@ Waveform.prototype.draw_waveform = function () {
 Waveform.prototype.selection_handler = function () {
     var selected_pixels = (dx > 0) ? [ x, x + dx ] : [ x + dx, x ];
     var selected_times = [
-        selected_pixels[0] / this.width * this.clip.duration,
-        selected_pixels[1] / this.width * this.clip.duration
+        selected_pixels[0] / this.div.width() * this.clip_audio.duration,
+        selected_pixels[1] / this.div.width() * this.clip_audio.duration
     ];
 
     //this.raphael.selection = this.raphael.rect(
     //    selected_pixels[0], 0,
-    //    selected_pixels[1], this.height
+    //    selected_pixels[1], this.div.height()
     //);
 };
 
 Waveform.prototype.attach_selection_pane = function () {
-    this.selection = [ 0, this.width ];  // Start off by including everything.
-    //this.raphael.selection = this.raphael.rect(0, 0, this.width, this.height)
+    this.selection = [ 0, this.div.width() ];  // Start off by including everything.
+    //this.raphael.selection = this.raphael.rect(0, 0, this.div.width(), this.div.height())
     //    .attr({ opacity: 0.2, fill: "0xEEE" });
 
     //this.raphael.right_handle = this.raphael.circle( TODO
 };
 
-Waveform.prototype.render = function (target_div_name) {
+Waveform.prototype.render = function () {
     // Create the Raphael canvas in the provided div:
-    this.raphael = Raphael(target_div_name, this.width, this.height);
+    this.raphael = Raphael(this.div_name, this.div.width(), this.div.height());
 
     this.draw_waveform();
     this.attach_selection_pane();

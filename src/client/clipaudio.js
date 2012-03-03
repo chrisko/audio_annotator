@@ -26,16 +26,16 @@ function ClipAudio(div_name, clip_id) {
         });
     });
 
-    var sg = this;
-
     // Simultaneously, grab the audio data as a JSON array:
+    var sg = this;
     var clip_data = $.getJSON("/clips/" + clip_id + "/data")
     .error(function (xhr, err) {
         $("#error").append("<br>Error retrieving audio data: " + err);
     })
     .success(function (clip_data, stat, xhr) {
         // Store this data array as a property of the SoundManager clip:
-        $("#waveform").data = clip_data;
+        sg.div.data = clip_data;
+        console.log("triggering audio_data_loaded");
         sg.div.trigger("audio_data_loaded", sg.data);
 
         sg.div.bind("play_audio", function () {

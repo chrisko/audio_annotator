@@ -18,6 +18,17 @@ body {
     font:100% normal verdana,arial,tahoma,"sans serif";
 }
 
+#clip_visualization {
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:1000;
+    height:100%;
+    width:100%;
+    visibility:visible;
+    padding:20px 20px 20px 20px;
+}
+
 #spectrogram {
     position:absolute;
     top:0;
@@ -29,15 +40,8 @@ body {
 }
 
 #waveform {
-    position:absolute;
-    top:0;
-    left:0;
-    z-index:1000;
-    height:100%;
-    width:100%;
     opacity:0.15;
     -moz-opacity:0.15;
     filter:alpha(opacity=15);
     visibility:visible;
-    padding:20px 20px 20px 20px;
 }
