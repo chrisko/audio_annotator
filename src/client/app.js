@@ -22,7 +22,6 @@ var Selection = Backbone.Model.extend({
 });
 
 var ClipListView = Backbone.View.extend({
-    el: $("#main"),
     template: "<ul class=\"playlist dark\">"
             + "<% _.each(clips, function (clip) { %>"
               + "<li>"
@@ -40,17 +39,44 @@ var ClipListView = Backbone.View.extend({
             sg.$el.html(contents);
             sg.$el.fadeIn("fast");
         });
+
         return this;
     }
 });
 
 var ClipView = Backbone.View.extend({
-    el: $("#main"),
+    _audio: null,
+    _selection: null,
+    _waveform: null,
+
+    events: {
+        // UI Events:
+        //"click .waveform": "",
+        //"mousedown .waveform": "",
+        "mouseenter #waveform": function () { this.$el.css("cursor", "crosshair"); },
+        "mouseleave #waveform": function () { this.$el.css("cursor", "auto"); },
+
+        "mousedown #waveform": function (e) { this.update_selection("mousedown", e); },
+        "mousemove #waveform": function (e) { this.update_selection("mousemove", e); },
+        "mouseup #waveform": function (e) { this.update_selection("mouseup", e); },
+
+        // Custom Events:
+        "audio_data_loaded": "handle_audio_data_loaded",
+        "play_audio": function () { this.audio.play_audio(); }
+    },
 
     template: "<center>"
-              + "<img id=\"spectrogram\" src=\"clips/<%= id %>/spectrogram\">"
-              + "<div id=\"clipvis\"></div>"
+              + "<div id=\"clipvis\">"
+                + "<img id=\"spectrogram\" src=\"clips/<%= id %>/spectrogram\">"
+                + "<div id=\"waveform\">"
+              + "</div>"
             + "</center>",
+
+    initialize: function () {
+        // Bind the document keydown event. Unbound later, in destroy().
+        _.bindAll(this, "handle_keydown");
+        $(document).bind("keydown", this.handle_keydown);
+    },
 
     render: function () {
         var sg = this;
@@ -58,14 +84,59 @@ var ClipView = Backbone.View.extend({
             sg.$el.empty();
             var contents = _.template(sg.template, { id: sg.id });
             sg.$el.html(contents);
-            sg.clipvis = new ClipViewer("clipvis", sg.id);
+
+            if (sg.audio == null) sg.audio = new ClipAudio(sg.$el, sg.id);
+            if (sg.selection == null) sg.selection = new Selection(sg.$el);
+            sg.waveform = null;  // Until the audio data's loaded.
+
             sg.$el.fadeIn("fast");
+            window.scrollTo(0, 0);
         });
+
         return this;
+    },
+
+    destroy: function () {
+        this.remove();
+        $(document).unbind("keydown", this.handle_keydown);
+    },
+
+    handle_audio_data_loaded: function () {
+        if (this.waveform == null) {
+            this.waveform = new Waveform($("#waveform"), this.audio);
+            this.waveform.render();
+        }
+
+        return false;  // Prevent event propagation.
+    },
+
+    handle_keydown: function (e) {
+        var key = e.which || e.keyCode || e.keyChar;
+        if (key == 32) {
+            this.trigger("play_audio");
+            return false;  // Don't propagate spaces up.
+        }
+
+        return true;  // Anything else, let the browser have.
+    },
+
+    update_selection: function (event_name, e) {
+        if (event_name == "mousedown") {
+            console.log("mouse is down!");
+        } else if (event_name == "mousemove") {
+            console.log("mouse moved!");
+        } else if (event_name == "mouseup") {
+            console.log("mouse is up!");
+        }
+
+        return false;  // No propagation.
     }
 });
 
 var Languishes = Backbone.Router.extend({
+    el: "#main",
+    $el: $("#main"),
+
     _cliplist: null,  // The list of all clips, returned by the server.
     _currentclip: null,  // If a specific clip is selected, it's kept here.
     _segmentlist: null,  // The current clip's segments, if any.
@@ -100,15 +171,18 @@ var Languishes = Backbone.Router.extend({
     // Handle the "no fragment" (or I guess empty fragment) page rendering.
     index: function () {
         this._currentclip = null;
-        //assert(this._cliplistview);  // Should have been initialized above.
-        this._cliplistview.render();
+
+        this.$el.empty();
+        this.$el.append(this._cliplistview.render().el);
     },
 
     // Handle the "#clips/12345" fragment rendering:
     hashclips: function (id) {
         this._currentclip = id;
         this._clipview = new ClipView({ id: id });
-        this._clipview.render();
+
+        this.$el.empty();
+        this.$el.append(this._clipview.render().el);
     }
 
     // Handle the "#clips/12345/segment

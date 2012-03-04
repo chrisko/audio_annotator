@@ -18,14 +18,13 @@ body {
     font:100% normal verdana,arial,tahoma,"sans serif";
 }
 
-#clip_visualization {
+#clipvis {
     position:absolute;
     top:0;
     left:0;
-    z-index:1000;
     height:100%;
     width:100%;
-    visibility:visible;
+    /* visibility:visible; */
     padding:20px 20px 20px 20px;
 }
 
@@ -40,6 +39,15 @@ body {
 }
 
 #waveform {
+    position:absolute;
+    top:0;
+    left:0;
+    height:100%;
+    width:100%;
+    visibility:visible;
+    padding:20px 20px 20px 20px;
+
+    z-index:1000;
     opacity:0.15;
     -moz-opacity:0.15;
     filter:alpha(opacity=15);

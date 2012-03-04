@@ -11,12 +11,15 @@ soundManager.ontimeout(function (status_msg) {
     $("#error").append("SoundManager2 timed out: " + status_msg);
 });
 
-function ClipAudio(div_name, clip_id) {
-    this.div = $("#" + div_name);
+function ClipAudio(el, clip_id) {
+    this.el = el;
     this.clip_id = clip_id;
 
-    // Create the sound by loading the wav file from the server:
+    // These two will be created asynchronously:
     this.sound = null;
+    this.data = null;
+
+    // Create the sound by loading the audio file from the server:
     soundManager.onready(function () {
         this.sound = soundManager.createSound({
             id: clip_id,
@@ -27,23 +30,18 @@ function ClipAudio(div_name, clip_id) {
     });
 
     // Simultaneously, grab the audio data as a JSON array:
-    var sg = this;
-    var clip_data = $.getJSON("/clips/" + clip_id + "/data")
-    .error(function (xhr, err) {
-        $("#error").append("<br>Error retrieving audio data: " + err);
-    })
-    .success(function (clip_data, stat, xhr) {
-        // Store this data array as a property of the SoundManager clip:
-        sg.div.data = clip_data;
-        console.log("triggering audio_data_loaded");
-        sg.div.trigger("audio_data_loaded", sg.data);
-
-        sg.div.bind("play_audio", function () {
-            console.log(sg);
-            if (sg.sound)
-                sg.sound.togglePause();
-
-            //return false;  // Stop event propagation.
-        });
+    var ca = this;
+    $.ajax({
+        url: "/clips/" + clip_id + "/data",
+        dataType: "json",
+        success: function (clip_data) {
+            ca.data = clip_data;
+            ca.el.trigger("audio_data_loaded");
+        },
     });
 }
+
+ClipAudio.prototype.play_audio = function () {
+    if (sg.sound)
+        sg.sound.togglePause();
+};

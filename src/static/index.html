@@ -4,7 +4,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="author" content="Chris Koenig" />
 
-        <title>Languishes</title>
+        <title>languishes</title>
 
         <!-- CSS -->
         <link rel="stylesheet" type="text/css" href="/css/reset.css" />
@@ -36,13 +36,12 @@
             // My own scripts:
             .script("/app.js")
             .script("/clipaudio.js")
-            .script("/selection.js")
-            .script("/spectrogram.js")
             .script("/waveform.js")
-            .script("/clipviewer.js")
             .wait(function () {
-                languishes = new Languishes();
-                Backbone.history.start();
+                $(document).ready(function () {
+                    languishes = new Languishes();
+                    Backbone.history.start();
+                });
             });
         </script>
     </body>

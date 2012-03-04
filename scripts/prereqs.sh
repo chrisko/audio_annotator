@@ -38,7 +38,7 @@ fi
 if [[ ! -f jquery.js ]]; then
     echo "Fetching jquery files..."
     JQUERY_URL=http://code.jquery.com
-    JQUERY_VERSION=1.7
+    JQUERY_VERSION=1.7.1
     $CURLCMD $JQUERY_URL/jquery-$JQUERY_VERSION.js > jquery.js
 fi
 
