@@ -41,6 +41,13 @@ function ClipAudio($el, clip_id) {
     });
 }
 
+ClipAudio.prototype.destroy = function () {
+    // Call SoundManager's "destruct" to stop, unload, and destroy the clip:
+    this.sound.destruct();
+    // And just to be explicit, we're getting rid of this data:
+    delete this.data;
+}
+
 ClipAudio.prototype.play_audio = function () {
     if (this.sound)
         this.sound.togglePause();

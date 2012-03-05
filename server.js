@@ -81,7 +81,7 @@ languishes.get("/", function (req, res) {
 });
 
 languishes.get("/clips", function (req, res) {
-    languishes.clip_library.get_all_clip_ids(function (ids) {
+    languishes.clip_library.get_all_clips(function (ids) {
         res.json(ids);
     });
 });

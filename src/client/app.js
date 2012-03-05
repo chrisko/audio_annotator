@@ -113,6 +113,13 @@ var ClipView = Backbone.View.extend({
         $(document).bind("keydown", this.handle_keydown);
     },
 
+    destroy: function () {
+        this.remove();
+        $(document).unbind("keydown", this.handle_keydown);
+        if (this.audio)
+            this.audio.destroy();
+    },
+
     render: function () {
         var sg = this;
         this.$el.fadeOut("fast", function () {
@@ -128,11 +135,6 @@ var ClipView = Backbone.View.extend({
         });
 
         return this;
-    },
-
-    destroy: function () {
-        this.remove();
-        $(document).unbind("keydown", this.handle_keydown);
     },
 
     handle_audio_data_loaded: function () {
@@ -209,45 +211,40 @@ var Languishes = Backbone.Router.extend({
         "clips/:id/:range": "hashclips"
     },
 
-    initialize: function (options) {
-        // If we already fetched the cliplist, consider things initialized.
-        if (this._cliplist !== null)
-            return this;
-
-        this._cliplistview = new ClipListView({ model: this._cliplist });
-
-        this._cliplist = new ClipList;
-        this._cliplist.bind("change", this.index, this);
-
-        var l = this;
-        this._cliplist.fetch({
-            success: function (collection, response) {
-                l.index();
-            }
-        });
-
-        return this;
-    },
-
     // Handle the "no fragment" (or I guess empty fragment) page rendering.
     index: function () {
+        console.log("index called!");
         this._currentclip = null;
+        if (!this._cliplist) {
+            this._cliplist = new ClipList;
+            this._cliplist.fetch();
+        }
 
-        // For more on this pattern, see
-        // https://github.com/documentcloud/backbone/issues/957
-        this.$el.empty();
-        this.$el.append(this._cliplistview.render().el);
+        var ls = this;
+        this._cliplist.fetch({
+            success: function (collection, response) {
+                ls._cliplist = collection;
+
+                if (!ls._cliplistview)
+                    ls._cliplistview = new ClipListView({ model: ls._cliplist });
+
+                // For more on this pattern, see
+                // https://github.com/documentcloud/backbone/issues/957
+                ls.$el.empty();
+                ls.$el.append(ls._cliplistview.render().el);
+            }
+        });
     },
 
     // Handle the "#clips/12345" fragment rendering:
     hashclips: function (id, range) {
         console.log("hashclips called with id " + id + ", range " + range);
         this._currentclip = id;
+
+        if (this._clipview) this._clipview.destroy();
         this._clipview = new ClipView({ id: id });
 
         this.$el.empty();
         this.$el.append(this._clipview.render().el);
     }
-
-    // Handle the "#clips/12345/segment
 });

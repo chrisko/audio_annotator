@@ -136,7 +136,7 @@ ClipLibrary.prototype.add_new_clip = function (clip_filename, cb) {
     });
 };
 
-ClipLibrary.prototype.get_all_clip_ids = function (cb) {
+ClipLibrary.prototype.get_all_clips = function (cb) {
     this.redis.keys("clip:*:filename", function (err, replies) {
         var clip_ids = [ ];
         for (r in replies) {
