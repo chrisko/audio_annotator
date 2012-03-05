@@ -30,6 +30,11 @@ var Selection = Backbone.Model.extend({
         this.anchor = input.anchor;
     },
 
+    destroy: function () {
+        // Triggering redraw_selection with null erases the current selection.
+        this.trigger("redraw_selection", null);
+    },
+
     update: function (new_x, finalize) {
         // Assign the new start and end positions based on where the cursor
         // began and where it is now. This is keeping in mind that they user
@@ -40,8 +45,10 @@ var Selection = Backbone.Model.extend({
             this.trigger("redraw_selection", this);
         }
 
-        if (finalize)
+        if (finalize) {
             this.is_finalized = true;
+            console.log("Finalized selection at: [" + this.start + ", " + this.end + "]");
+        }
     }
 });
 
@@ -146,8 +153,17 @@ var ClipView = Backbone.View.extend({
 
     update_selection: function (e) {
         if (e.type == "mousedown") {
+            // If there's already a Selection, clear it out:
+            if (this.selection) {
+                this.selection.unbind("redraw_selection");
+                this.selection.destroy();
+            }
+
+            // Then create the new Selection, anchoring to where the mouse
+            // first went down, and bind to its "redraw_selection" event:
             this.selection = new Selection({ anchor: e.offsetX });
-            this.selection.bind("redraw_selection", this.handle_redraw_selection, this);
+            this.selection.bind("redraw_selection",
+                                this.handle_redraw_selection, this);
         } else if (e.type == "mousemove") {
             // Don't process movements unless we're actually selecting:
             if (this.selection && !this.selection.is_finalized)

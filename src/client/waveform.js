@@ -80,26 +80,24 @@ Waveform.prototype.selection_handler = function () {
         selected_pixels[0] / this.$el.width() * this.clip_audio.duration,
         selected_pixels[1] / this.$el.width() * this.clip_audio.duration
     ];
-
-    //this.raphael.selection = this.raphael.rect(
-    //    selected_pixels[0], 0,
-    //    selected_pixels[1], this.$el.height()
-    //);
 };
 
 Waveform.prototype.redraw_selection = function (selection) {
+    // If "null" was passed in, wipe the current selection:
     var range = selection ? [ selection.start, selection.end ] : null;
 
     if (!this.raphael.current_selection)
-        this.raphael.selection = this.raphael.set();
+        this.raphael.current_selection = this.raphael.set();
+
+    this.raphael.current_selection.forEach(function (el) { el.hide(); });
+    this.raphael.current_selection.clear();
 
     if (range) {
         var height = this.$el.height();
         var width = range[1] - range[0];
-        this.raphael.selection = this.raphael.rect(range[0], 0, width, height)
-            .attr({ opacity: 0.2, fill: "0xEEE" });
-    } else {
-        delete this.raphael.selection;
+        this.raphael.current_selection.clear();
+        this.raphael.current_selection.push(this.raphael.rect(range[0], 0, width, height));
+        this.raphael.current_selection.attr({ opacity: 0.2, fill: "0xEEE" });
     }
 
     //this.raphael.right_handle = this.raphael.circle( TODO

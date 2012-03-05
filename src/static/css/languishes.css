@@ -48,8 +48,8 @@ body {
     padding:20px 20px 20px 20px;
 
     z-index:1000;
-    opacity:0.15;
+    /* opacity:0.15;
     -moz-opacity:0.15;
-    filter:alpha(opacity=15);
+    filter:alpha(opacity=15); */
     visibility:visible;
 }

@@ -2,7 +2,7 @@
 // CIS-400 Senior Design Project
 
 soundManager.consoleOnly = true;
-soundManager.debugMode = true;
+soundManager.debugMode = false;
 soundManager.url = "/";
 soundManager.useFastPolling = true;
 soundManager.useHighPerformance = true;
