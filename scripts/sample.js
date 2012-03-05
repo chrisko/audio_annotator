@@ -68,11 +68,11 @@ exec("find \"" + buckeye + "\" -iname \"*.wav\"", function (error, stdout, stder
     }
 });
 
-var b2w = "/Users/ckoenig/Music/iTunes/iTunes Music/Podcasts/Back to Work";
-var b2w_files = fs.readdirSync(b2w);
-var b2w_shuffled = shuffle(b2w_files);
-
-var i; for (i = 0; i < 10; i++) {
-    var full_filename = b2w + "/" + b2w_shuffled[i];
-    get_audio_info(full_filename, splice_file);
-}
+//var b2w = "/Users/ckoenig/Music/iTunes/iTunes Music/Podcasts/Back to Work";
+//var b2w_files = fs.readdirSync(b2w);
+//var b2w_shuffled = shuffle(b2w_files);
+//
+//var i; for (i = 0; i < 10; i++) {
+//    var full_filename = b2w + "/" + b2w_shuffled[i];
+//    get_audio_info(full_filename, splice_file);
+//}
