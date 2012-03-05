@@ -7,6 +7,7 @@ var Clip = Backbone.Model.extend({
 });
 
 var ClipList = Backbone.Collection.extend({
+    url: "/clips",
     model: Clip,
     comparator: function (clip) {
         return clip.get("id");
@@ -48,6 +49,8 @@ var Selection = Backbone.Model.extend({
         if (finalize) {
             this.is_finalized = true;
             console.log("Finalized selection at: [" + this.start + ", " + this.end + "]");
+            // This tells the audio to cue up at the right spot, and al
+            this.trigger("finalized_selection");
         }
     }
 });
@@ -169,6 +172,9 @@ var ClipView = Backbone.View.extend({
             if (this.selection && !this.selection.is_finalized)
                 this.selection.update(e.offsetX, false);
         } else if (e.type == "mouseup") {
+            // The "true" finalizes this Selection, which produces an event
+            // that ends up calculating the actual time range and cues up
+            // the audio at the right spot.
             this.selection.update(e.offsetX, true);
         }
 
@@ -198,7 +204,9 @@ var Languishes = Backbone.Router.extend({
     // Maps URL fragments to functions below, to handle link rendering.
     routes: {
         "": "index",
-        "clips/:id": "hashclips"
+        "clips/:id": "hashclips",
+        // This format is based on http://www.w3.org/TR/media-frags (§4.2.1)
+        "clips/:id/:range": "hashclips"
     },
 
     initialize: function (options) {
@@ -206,16 +214,15 @@ var Languishes = Backbone.Router.extend({
         if (this._cliplist !== null)
             return this;
 
-        var ws = this;
-        // If we've not yet loaded the clips, make that AJAX call here:
-        $.ajax({
-            url: "clips",
-            dataType: "json",
-            data: { },
-            success: function (data) {
-                ws._cliplist = new ClipList(data);
-                ws._cliplistview = new ClipListView({ model: ws._cliplist });
-                Backbone.history.loadUrl();
+        this._cliplistview = new ClipListView({ model: this._cliplist });
+
+        this._cliplist = new ClipList;
+        this._cliplist.bind("change", this.index, this);
+
+        var l = this;
+        this._cliplist.fetch({
+            success: function (collection, response) {
+                l.index();
             }
         });
 
@@ -226,12 +233,15 @@ var Languishes = Backbone.Router.extend({
     index: function () {
         this._currentclip = null;
 
+        // For more on this pattern, see
+        // https://github.com/documentcloud/backbone/issues/957
         this.$el.empty();
         this.$el.append(this._cliplistview.render().el);
     },
 
     // Handle the "#clips/12345" fragment rendering:
-    hashclips: function (id) {
+    hashclips: function (id, range) {
+        console.log("hashclips called with id " + id + ", range " + range);
         this._currentclip = id;
         this._clipview = new ClipView({ id: id });
 
