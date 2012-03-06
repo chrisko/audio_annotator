@@ -37,7 +37,7 @@ function ClipAudio($el, clip_id) {
         success: function (clip_data) {
             ca.data = clip_data;
             ca.$el.trigger("audio_data_loaded");
-        },
+        }
     });
 }
 

@@ -29,7 +29,7 @@ var Selection = Backbone.Model.extend({
         "anchor": null,
         "start": null,
         "end": null,
-        "is_finalized": false,
+        "is_finalized": false
     },
 
     initialize: function (input) {
