@@ -111,11 +111,15 @@ var ClipView = Backbone.View.extend({
         _.bindAll(this, "handle_keydown");
         // Bind the document keydown event. Unbound later, in destroy().
         $(document).bind("keydown", this.handle_keydown);
+
+        _.bindAll(this, "handle_resize");
+        $(window).bind("resize", this.handle_resize);
     },
 
     destroy: function () {
         this.remove();
         $(document).unbind("keydown", this.handle_keydown);
+        $(window).unbind("resize", this.handle_resize);
         if (this.audio)
             this.audio.destroy();
     },
@@ -154,6 +158,15 @@ var ClipView = Backbone.View.extend({
         }
 
         return true;  // Anything else, let the browser have.
+    },
+
+    handle_resize: function (e) {
+        console.log("resize called!");
+        if (this.waveform) {
+            this.waveform.destroy();
+            this.waveform = new Waveform($("#waveform"), this.audio);
+            this.waveform.render();
+        }
     },
 
     update_selection: function (e) {
@@ -213,7 +226,6 @@ var Languishes = Backbone.Router.extend({
 
     // Handle the "no fragment" (or I guess empty fragment) page rendering.
     index: function () {
-        console.log("index called!");
         this._currentclip = null;
         if (!this._cliplist) {
             this._cliplist = new ClipList;

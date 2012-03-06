@@ -112,3 +112,8 @@ Waveform.prototype.render = function () {
     this.draw_waveform();
     //this.attach_selection_pane();
 };
+
+Waveform.prototype.destroy = function () {
+    if (this.raphael)
+        this.raphael.clear();
+};
