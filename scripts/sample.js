@@ -1,6 +1,7 @@
 #!/usr/local/bin/node
 
 var assert = require("assert"),
+    async = require("async"),
     exec = require("child_process").exec,
     fs = require("fs"),
     path = require("path");
@@ -64,6 +65,7 @@ exec("find \"" + buckeye + "\" -iname \"*.wav\"", function (error, stdout, stder
 
     var shuffled = shuffle(buckeye_files);
     var i; for (i = 0; i < 10; i++) {
+        // Get the audio info, then splice up the file:
         get_audio_info(shuffled[i], splice_file);
     }
 });

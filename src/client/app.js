@@ -14,6 +14,16 @@ var ClipList = Backbone.Collection.extend({
     }
 });
 
+var Segment = Backbone.Model.extend({
+    defaults: {
+        "id": null,
+        "begin": null,
+        "end": null,
+        "layer": null,
+        "content": null
+    }
+});
+
 var Selection = Backbone.Model.extend({
     defaults: {
         "anchor": null,
@@ -161,7 +171,6 @@ var ClipView = Backbone.View.extend({
     },
 
     handle_resize: function (e) {
-        console.log("resize called!");
         if (this.waveform) {
             this.waveform.destroy();
             this.waveform = new Waveform($("#waveform"), this.audio);

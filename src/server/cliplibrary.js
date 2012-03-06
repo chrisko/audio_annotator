@@ -148,6 +148,18 @@ ClipLibrary.prototype.get_all_clips = function (cb) {
     });
 };
 
+ClipLibrary.prototype.get_clip_segments = function (clip_id, cb) {
+    this.redis.keys("clip:" + clip_id + ":segment:*", function (err, replies) {
+        var segments = [ ];
+        for (r in replies) {
+            var matches = replies[r].match(/^clip:.+?:segment:(.+)$/);
+            segments.push({ id: matches[1] });
+        }
+
+        cb(segments);
+    });
+};
+
 ClipLibrary.prototype.get_clip_location = function (clip_id, cb) {
     this.redis.get("clip:" + clip_id + ":filename", function (err, res) {
         cb(res);
