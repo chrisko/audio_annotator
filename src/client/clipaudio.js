@@ -11,16 +11,21 @@ soundManager.ontimeout(function (status_msg) {
     $("#error").append("SoundManager2 timed out: " + status_msg);
 });
 
-function ClipAudio($el, clip_id) {
-    this.$el = $el;
+function ClipAudio(delegate, clip_id) {
+    this.delegate = delegate;
     this.clip_id = clip_id;
 
     // These two will be created asynchronously:
     this.sound = null;
     this.data = null;
 
-    // Create the sound by loading the audio file from the server:
+    // Subscribe to various events that will be triggered on the delegate:
+    this.delegate.on("audio:toggle", this.toggle_audio, this);
+
+    // Finally, kick of the asynchronous loading of audio data:
     var ca = this;
+
+    // Create the sound by loading the audio file from the server:
     soundManager.onready(function () {
         ca.sound = soundManager.createSound({
             id: clip_id,
@@ -36,19 +41,46 @@ function ClipAudio($el, clip_id) {
         dataType: "json",
         success: function (clip_data) {
             ca.data = clip_data;
-            ca.$el.trigger("audio_data_loaded");
+            ca.delegate.trigger("audio:loaded");
         }
     });
-}
+};
 
 ClipAudio.prototype.destroy = function () {
     // Call SoundManager's "destruct" to stop, unload, and destroy the clip:
     this.sound.destruct();
-    // And just to be explicit, we're getting rid of this data:
+    // Just to be explicit, we're getting rid of this data:
     delete this.data;
-}
+    // And we're not emitting any more events:
+    this.off();
+};
 
-ClipAudio.prototype.play_audio = function () {
-    if (this.sound)
-        this.sound.togglePause();
+ClipAudio.prototype.toggle_audio = function () {
+    if (!this.sound) return;
+
+    if (this.sound.playState == 1) {
+        // The audio is playing (or buffering in preparation to play).
+        this.sound.pause();
+        return;
+    }
+
+    // The audio's not playing, so start it up:
+    var ca = this;
+    this.sound.play({
+        //from: 
+        whileplaying: function () {
+            ca.delegate.trigger("audio:playing", this.position, this.duration);
+        },
+        onfinish: function () {
+            ca.delegate.trigger("audio:done_playing");
+        }
+    });
+};
+
+ClipAudio.prototype.cue_up_portion = function () {
+    if (this.sound) {
+        this.sound.stop();
+        // http://www.schillmania.com/projects/soundmanager2/doc/#sm-config
+        this.sound.setPosition(ms);
+    }
 };

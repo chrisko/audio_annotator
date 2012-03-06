@@ -9,9 +9,15 @@
 // commonly see, it's based on the maximum amplitude per sample. The "rms" way
 // ("Root Mean Square") looks smoother, since it's based on a windowed average.
 
-function Waveform($el, clip_audio) {
+function Waveform(delegate, $el, clip_audio) {
+    this.delegate = delegate;
     this.$el = $el;
     this.clip_audio = clip_audio;
+
+    // Subscribe to all the events we're curious in:
+    this.delegate.on("audio:loaded", this.render, this);
+    this.delegate.on("audio:playing", this.update_play_marker, this);
+    this.delegate.on("audio:done_playing", this.reset_play_marker, this);
 
     this.method = "peak";
 };
@@ -26,7 +32,9 @@ Waveform.prototype.update_play_marker = function (pos, dur) {
     }
 
     var starting_x = pos / dur * this.$el.width();
-    var half_second_offset = 500 / this.clip_audio.duration * this.$el.width();
+    var half_second_offset = 500 /* ms */
+                           / dur
+                           * this.$el.width();
 
     // And draw a rectangle where we're currently playing:
     this.raphael.playmarker.push(
@@ -35,6 +43,11 @@ Waveform.prototype.update_play_marker = function (pos, dur) {
             .animate({ x: starting_x + half_second_offset, opacity: 0 }, 500, "linear"));
 
     // TODO: remove old playmarkers periodically.
+};
+
+Waveform.prototype.reset_play_marker = function () {
+    if (this.raphael.playmarker)
+        this.raphael.playmarker.hide();
 };
 
 Waveform.prototype.draw_waveform = function () {
@@ -86,18 +99,18 @@ Waveform.prototype.redraw_selection = function (selection) {
     // If "null" was passed in, wipe the current selection:
     var range = selection ? [ selection.start, selection.end ] : null;
 
-    if (!this.raphael.current_selection)
-        this.raphael.current_selection = this.raphael.set();
+    if (!this.raphael.selection)
+        this.raphael.selection = this.raphael.set();
 
-    this.raphael.current_selection.forEach(function (el) { el.hide(); });
-    this.raphael.current_selection.clear();
+    this.raphael.selection.forEach(function (el) { el.hide(); });
+    this.raphael.selection.clear();
 
     if (range) {
         var height = this.$el.height();
         var width = range[1] - range[0];
-        this.raphael.current_selection.clear();
-        this.raphael.current_selection.push(this.raphael.rect(range[0], 0, width, height));
-        this.raphael.current_selection.attr({ opacity: 0.2, fill: "0xEEE" });
+        this.raphael.selection.clear();
+        this.raphael.selection.push(this.raphael.rect(range[0], 0, width, height));
+        this.raphael.selection.attr({ opacity: 0.2, fill: "0xEEE" });
     }
 
     //this.raphael.right_handle = this.raphael.circle( TODO
@@ -110,7 +123,6 @@ Waveform.prototype.render = function () {
                            this.$el.height());
 
     this.draw_waveform();
-    //this.attach_selection_pane();
 };
 
 Waveform.prototype.destroy = function () {

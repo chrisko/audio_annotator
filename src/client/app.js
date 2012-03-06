@@ -95,18 +95,13 @@ var ClipView = Backbone.View.extend({
 
     events: {
         // UI Events:
-        //"click .waveform": "",
-        //"mousedown .waveform": "",
         "mouseenter #waveform": function () { this.$el.css("cursor", "crosshair"); },
         "mouseleave #waveform": function () { this.$el.css("cursor", "auto"); },
-
         "mousedown #waveform": "update_selection",
         "mousemove #waveform": "update_selection",
         "mouseup #waveform": "update_selection",
 
         // Custom Events:
-        "audio_data_loaded": "handle_audio_data_loaded",
-        "play_audio": "handle_play_audio"
     },
 
     template: "<center>"
@@ -117,6 +112,8 @@ var ClipView = Backbone.View.extend({
             + "</center>",
 
     initialize: function () {
+        console.log("initializing ClipView");
+
         // Make sure handle_keydown is always called with this ClipView.
         _.bindAll(this, "handle_keydown");
         // Bind the document keydown event. Unbound later, in destroy().
@@ -139,10 +136,10 @@ var ClipView = Backbone.View.extend({
         this.$el.fadeOut("fast", function () {
             sg.$el.empty();
             var contents = _.template(sg.template, { id: sg.id });
-            sg.$el.html(contents);
+            sg.$el.append(contents);
 
-            if (sg.audio == null) sg.audio = new ClipAudio(sg.$el, sg.id);
-            sg.waveform = null;  // Until the audio data's loaded.
+            sg.audio = new ClipAudio(sg, sg.id);
+            sg.waveform = new Waveform(sg, sg.$el.find("#waveform"), sg.audio);
 
             sg.$el.fadeIn("fast");
             window.scrollTo(0, 0);
@@ -151,19 +148,12 @@ var ClipView = Backbone.View.extend({
         return this;
     },
 
-    handle_audio_data_loaded: function () {
-        if (this.waveform == null) {
-            this.waveform = new Waveform($("#waveform"), this.audio);
-            this.waveform.render();
-        }
-
-        return false;  // Prevent event propagation.
-    },
-
     handle_keydown: function (e) {
         var key = e.which || e.keyCode || e.keyChar;
         if (key == 32) {
-            this.handle_play_audio();
+            // Trigger the "audio:toggle" event, which the ClipAudio instance
+            // should be listening for. Will play (or pause) the user's audio.
+            this.trigger("audio:toggle");
             return false;  // Don't propagate spaces up.
         }
 
@@ -173,8 +163,8 @@ var ClipView = Backbone.View.extend({
     handle_resize: function (e) {
         if (this.waveform) {
             this.waveform.destroy();
-            this.waveform = new Waveform($("#waveform"), this.audio);
-            this.waveform.render();
+            this.waveform = new Waveform(this, this.$el.find("#waveform"), this.audio);
+            if (this.audio.data) this.waveform.render();
         }
     },
 
@@ -212,8 +202,9 @@ var ClipView = Backbone.View.extend({
         return false;
     },
 
-    handle_play_audio: function () {
-        this.audio.play_audio();
+    handle_reset_play_marker: function () {
+        this.waveform.reset_play_marker();
+        return false;
     }
 });
 
@@ -259,6 +250,7 @@ var Languishes = Backbone.Router.extend({
 
     // Handle the "#clips/12345" fragment rendering:
     hashclips: function (id, range) {
+        console.log(this);
         console.log("hashclips called with id " + id + ", range " + range);
         this._currentclip = id;
 
