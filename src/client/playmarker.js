@@ -10,6 +10,7 @@ function Playmarker(delegate, svg_id) {
     this.delegate.on("audio:playing", this.update, this);
     this.delegate.on("audio:paused", this.pause, this);
     this.delegate.on("audio:done_playing", this.reset, this);
+    this.delegate.on("selection:finalized", this.pause, this);
     this.delegate.on("view:bound_to_dom", this.find_svg, this);
 }
 
@@ -55,11 +56,11 @@ Playmarker.prototype.update = function (pos, dur) {
         .attr("x2", starting_x + x_offset);
 };
 
-Playmarker.prototype.pause = function (pos, dur) {
+Playmarker.prototype.pause = function (where) {
     if (!this.svg) return;
     if (this.svg.select("#playmarker").empty()) return;
 
-    var xpos = pos / dur * this.width();
+    var xpos = where * this.width();
     console.log("pausing at xpos " + xpos);
 
     // Render it invisible while we remove any transitions on it:
