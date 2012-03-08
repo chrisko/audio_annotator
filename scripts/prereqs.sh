@@ -24,6 +24,7 @@ if [[ ! -f soundmanager2.js || ! -f soundmanager2.swf || ! -f soundmanager2_debu
     SOUNDMANAGER_URL=https://raw.github.com/scottschiller/SoundManager2
     SOUNDMANAGER_SHA1=fa9c78c87e75273497ac877a919660b468fb2ec1
     $CURLCMD $SOUNDMANAGER_URL/$SOUNDMANAGER_SHA1/script/soundmanager2.js > soundmanager2.js
+    $CURLCMD $SOUNDMANAGER_URL/$SOUNDMANAGER_SHA1/script/soundmanager2-nodebug-jsmin.js > soundmanager2-nodebug-jsmin.js
     $CURLCMD $SOUNDMANAGER_URL/$SOUNDMANAGER_SHA1/swf/soundmanager2.swf > soundmanager2.swf
     $CURLCMD $SOUNDMANAGER_URL/$SOUNDMANAGER_SHA1/swf/soundmanager2_debug.swf > soundmanager2_debug.swf
 fi

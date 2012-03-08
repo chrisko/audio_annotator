@@ -31,7 +31,8 @@ function ClipAudio(delegate, clip_id) {
             id: clip_id,
             url: "/clips/" + clip_id + ".wav",
             type: "audio/wav",
-            autoLoad: true
+            autoLoad: true,
+            multiShot: false
         });
     });
 
@@ -58,9 +59,20 @@ ClipAudio.prototype.destroy = function () {
 ClipAudio.prototype.toggle_audio = function () {
     if (!this.sound) return;
 
+    if (this.sound.paused) {
+        this.sound.resume();
+        return;
+    }
+
     if (this.sound.playState == 1) {
         // The audio is playing (or buffering in preparation to play).
         this.sound.pause();
+        this.delegate.trigger("audio:paused",
+                              this.sound.position,
+                              this.sound.duration);
+
+        this.sound.setPosition(this.sound.position);
+
         return;
     }
 
@@ -69,7 +81,12 @@ ClipAudio.prototype.toggle_audio = function () {
     this.sound.play({
         //from: 
         whileplaying: function () {
+            if (this.paused || this.isBuffering || this.readyState != 3) return;
             ca.delegate.trigger("audio:playing", this.position, this.duration);
+        },
+        onbufferchange: function () {
+            if (this.isBuffering)
+                this.delegate.trigger("audio:paused", this.position, this.duration);
         },
         onfinish: function () {
             ca.delegate.trigger("audio:done_playing");

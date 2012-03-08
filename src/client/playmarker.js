@@ -8,6 +8,7 @@ function Playmarker(delegate, svg_id) {
     this.svg_id = svg_id;
 
     this.delegate.on("audio:playing", this.update, this);
+    this.delegate.on("audio:paused", this.pause, this);
     this.delegate.on("audio:done_playing", this.reset, this);
     this.delegate.on("view:bound_to_dom", this.find_svg, this);
 }
@@ -40,35 +41,46 @@ Playmarker.prototype.update = function (pos, dur) {
 
     this.svg.select("#playmarker")
         .attr("x1", starting_x)
-        .attr("x2", starting_x)
+        .attr("x2", starting_x);
 
+    var offset_ms = 250;
     var starting_x = pos / dur * this.width();
-    var half_second_offset = 500 /* ms */
-                           / dur
-                           * this.width();
+    var x_offset = offset_ms / dur * this.width();
 
     this.svg.select("#playmarker")
       .transition()
+        .duration(offset_ms)
         .ease("linear")
-        .duration(500)
-      .attr("x1", starting_x + half_second_offset)
-      .attr("x2", starting_x + half_second_offset);
+        .attr("x1", starting_x + x_offset)
+        .attr("x2", starting_x + x_offset);
 };
 
 Playmarker.prototype.pause = function (pos, dur) {
     if (!this.svg) return;
-
-    // Get rid of the current playmarker and any of its transitions:
-    this.svg.select("#playmarker").remove();
+    if (this.svg.select("#playmarker").empty()) return;
 
     var xpos = pos / dur * this.width();
+    console.log("pausing at xpos " + xpos);
 
-    this.svg.append("line")
-        .attr("id", "playmarker")
+    // Render it invisible while we remove any transitions on it:
+    //this.svg.select("#playmarker").attr("visible", false);
+    // Use an empty transition of duration 0 to override any others:
+    this.svg.select("#playmarker")
+      .transition()
+        .duration(0)
+        .ease("linear")
         .attr("x1", xpos)
-        .attr("y1", 0)
-        .attr("x2", xpos)
-        .attr("y2", this.height());
+        .attr("x2", xpos);
+
+    /*
+    function resetPlaymarker() {
+        console.log(this.select("#playmarker").attr("x1"));
+        this.select("#playmarker")
+            .attr("x1", xpos)
+            .attr("x2", xpos)
+            .attr("visible", true);
+    }
+    */
 };
 
 Playmarker.prototype.reset = function () {
