@@ -83,37 +83,3 @@ Waveform.prototype.render = function () {
 Waveform.prototype.destroy = function () {
     this.svg.select("#waveform").remove();
 };
-
-Waveform.prototype.selection_handler = function () {
-    if (!this.svg) return;
-    var selected_pixels = (dx > 0) ? [ x, x + dx ] : [ x + dx, x ];
-    var selected_times = [
-        selected_pixels[0] / this.width() * this.clip_audio.duration,
-        selected_pixels[1] / this.width() * this.clip_audio.duration
-    ];
-};
-
-Waveform.prototype.redraw_selection = function (selection) {
-    if (!this.svg) return;
-
-    // If "null" was passed in, wipe the current selection:
-    if (!selection) {
-        this.svg.select("#selection").remove();
-        return;
-    }
-
-    // If the selection rectangle isn't there already, create it:
-    if (this.svg.select("#selection").empty()) {
-        this.svg.append("rect")
-            .attr("id", "selection");
-    }
-
-    // And now set its position:
-    this.svg.select("#selection")
-        .attr("x", selection.start)
-        .attr("y", 0)
-        .attr("width", selection.end - selection.start)
-        .attr("height", this.height());
-
-    // TODO: Handles, etc.
-};

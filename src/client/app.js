@@ -24,47 +24,6 @@ var Segment = Backbone.Model.extend({
     }
 });
 
-var Selection = Backbone.Model.extend({
-    defaults: {
-        "anchor": null,
-        "start": null,
-        "end": null,
-        "is_finalized": false
-    },
-
-    initialize: function (input) {
-        if (typeof(input) === "undefined")
-            throw "New Selection requires a map of initial settings.";
-        if (typeof(input.anchor) === "undefined")
-            throw "New Selection requires an initial anchor point.";
-
-        this.anchor = input.anchor;
-    },
-
-    destroy: function () {
-        // Triggering redraw_selection with null erases the current selection.
-        this.trigger("redraw_selection", null);
-    },
-
-    update: function (new_x, finalize) {
-        // Assign the new start and end positions based on where the cursor
-        // began and where it is now. This is keeping in mind that they user
-        // might be dragging *left*, rather than right.
-        if (!this.is_finalized) {
-            this.start = _.min([ this.anchor, new_x ]);
-            this.end = _.max([ this.anchor, new_x ]);
-            this.trigger("redraw_selection", this);
-        }
-
-        if (finalize) {
-            this.is_finalized = true;
-            console.log("Finalized selection at: [" + this.start + ", " + this.end + "]");
-            // This tells the audio to cue up at the right spot, and al
-            this.trigger("finalized_selection");
-        }
-    }
-});
-
 var ClipListView = Backbone.View.extend({
     template: "<ul class=\"playlist dark\">"
             + "<% _.each(clips, function (clip) { %>"
@@ -98,9 +57,6 @@ var ClipView = Backbone.View.extend({
         // UI Events:
         "mouseenter #clipvis": function () { this.$el.css("cursor", "crosshair"); },
         "mouseleave #clipvis": function () { this.$el.css("cursor", "auto"); },
-        "mousedown #clipvis": "update_selection",
-        "mousemove #clipvis": "update_selection",
-        "mouseup #clipvis": "update_selection"
     },
 
     template: "<center>"
@@ -137,9 +93,9 @@ var ClipView = Backbone.View.extend({
             sg.$el.append(contents);
 
             sg.audio = new ClipAudio(sg, sg.id);
-
-            sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
             sg.playmarker = new Playmarker(sg, "#clipsvg");
+            sg.selection = new Selection(sg, "#clipsvg");
+            sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
 
             sg.$el.fadeIn("fast");
             window.scrollTo(0, 0);
@@ -162,40 +118,6 @@ var ClipView = Backbone.View.extend({
 
     handle_resize: function (e) {
         if (this.waveform) this.waveform.redraw();
-    },
-
-    update_selection: function (e) {
-        if (e.type == "mousedown") {
-            // If there's already a Selection, clear it out:
-            if (this.selection) {
-                this.selection.unbind("redraw_selection");
-                this.selection.destroy();
-            }
-
-            // Then create the new Selection, anchoring to where the mouse
-            // first went down, and bind to its "redraw_selection" event:
-            this.selection = new Selection({ anchor: e.offsetX });
-            this.selection.bind("redraw_selection",
-                                this.handle_redraw_selection, this);
-        } else if (e.type == "mousemove") {
-            // Don't process movements unless we're actually selecting:
-            if (this.selection && !this.selection.is_finalized)
-                this.selection.update(e.offsetX, false);
-        } else if (e.type == "mouseup") {
-            // The "true" finalizes this Selection, which produces an event
-            // that ends up calculating the actual time range and cues up
-            // the audio at the right spot.
-            this.selection.update(e.offsetX, true);
-        }
-
-        return false;  // No propagation.
-    },
-
-    handle_redraw_selection: function () {
-        if (this.waveform)
-            this.waveform.redraw_selection(this.selection);
-
-        return false;
     },
 
     handle_reset_play_marker: function () {
