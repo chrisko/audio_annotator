@@ -14,6 +14,10 @@ function Playmarker(delegate, svg_id) {
     this.delegate.on("view:bound_to_dom", this.find_svg, this);
 }
 
+Playmarker.prototype.destroy = function () {
+    // Should be taken care of.
+};
+
 Playmarker.prototype.find_svg = function () {
     var svg = d3.select(this.svg_id);
     if (svg.empty()) throw "No SVG element " + this.svg_id + " found!";
@@ -61,7 +65,6 @@ Playmarker.prototype.pause = function (where) {
     if (this.svg.select("#playmarker").empty()) return;
 
     var xpos = where * this.width();
-    console.log("pausing at xpos " + xpos);
 
     // Render it invisible while we remove any transitions on it:
     //this.svg.select("#playmarker").attr("visible", false);
@@ -72,16 +75,6 @@ Playmarker.prototype.pause = function (where) {
         .ease("linear")
         .attr("x1", xpos)
         .attr("x2", xpos);
-
-    /*
-    function resetPlaymarker() {
-        console.log(this.select("#playmarker").attr("x1"));
-        this.select("#playmarker")
-            .attr("x1", xpos)
-            .attr("x2", xpos)
-            .attr("visible", true);
-    }
-    */
 };
 
 Playmarker.prototype.reset = function () {

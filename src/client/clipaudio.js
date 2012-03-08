@@ -53,8 +53,6 @@ ClipAudio.prototype.destroy = function () {
     this.sound.destruct();
     // Just to be explicit, we're getting rid of this data:
     delete this.data;
-    // And we're not emitting any more events:
-    this.off();
 };
 
 ClipAudio.prototype.toggle_audio = function () {

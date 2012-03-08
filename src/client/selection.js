@@ -20,7 +20,6 @@ Selection.prototype.bind_to_dom = function () {
     if (svg.empty()) throw "No SVG element " + this.svg_id + " found!";
     this.svg = svg;
 
-    console.log("Selection binding to DOM events...");
     this.svg.on("mousedown", handle_mouse_event);
     this.svg.on("mousemove", handle_mouse_event);
     this.svg.on("mouseup", handle_mouse_event);
@@ -83,9 +82,17 @@ Selection.prototype.update = function (new_x, finalize) {
         var start_spot = this.start / this.width(),
             end_spot = this.end / this.width();
         this.delegate.trigger("selection:finalized", start_spot, end_spot);
+        this.open_text_entry();
     }
 
     this.redraw();
+};
+
+Selection.prototype.open_text_entry = function () {
+    if (!this.svg) return;
+    if (this.anchor == null) return;
+
+    // TODO
 };
 
 Selection.prototype.redraw = function () {

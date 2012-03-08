@@ -82,8 +82,10 @@ var ClipView = Backbone.View.extend({
         $(document).unbind("keydown", this.handle_keydown);
         $(window).unbind("resize", this.handle_resize);
         // And finally, get rid of all our audio data:
-        if (this.audio)
-            this.audio.destroy();
+        if (this.audio) this.audio.destroy();
+        if (this.playmarker) this.playmarker.destroy();
+        if (this.selection) this.selection.destroy();
+        if (this.waveform) this.waveform.destroy();
     },
 
     render: function () {
