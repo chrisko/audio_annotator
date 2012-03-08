@@ -90,43 +90,42 @@ var ClipListView = Backbone.View.extend({
 
 var ClipView = Backbone.View.extend({
     audio: null,
+    playmarker: null,
     selection: null,
     waveform: null,
 
     events: {
         // UI Events:
-        "mouseenter #waveform": function () { this.$el.css("cursor", "crosshair"); },
-        "mouseleave #waveform": function () { this.$el.css("cursor", "auto"); },
-        "mousedown #waveform": "update_selection",
-        "mousemove #waveform": "update_selection",
-        "mouseup #waveform": "update_selection",
-
-        // Custom Events:
+        "mouseenter #clipvis": function () { this.$el.css("cursor", "crosshair"); },
+        "mouseleave #clipvis": function () { this.$el.css("cursor", "auto"); },
+        "mousedown #clipvis": "update_selection",
+        "mousemove #clipvis": "update_selection",
+        "mouseup #clipvis": "update_selection"
     },
 
     template: "<center>"
               + "<div id=\"clipvis\">"
                 + "<img id=\"spectrogram\" src=\"clips/<%= id %>/spectrogram\">"
-                + "<div id=\"waveform\">"
+                + "<svg id=\"clipsvg\"></svg>"
               + "</div>"
             + "</center>",
 
     initialize: function () {
-        console.log("initializing ClipView");
-
-        // Make sure handle_keydown is always called with this ClipView.
+        // Make sure these event handlers are always called with this ClipView.
         _.bindAll(this, "handle_keydown");
-        // Bind the document keydown event. Unbound later, in destroy().
-        $(document).bind("keydown", this.handle_keydown);
-
         _.bindAll(this, "handle_resize");
+        // And bind to the keydown and resize events. Unbound in destroy().
+        $(document).bind("keydown", this.handle_keydown);
         $(window).bind("resize", this.handle_resize);
     },
 
     destroy: function () {
+        // Remove this View instance from the DOM:
         this.remove();
+        // And remember to unbind the global events we subscribed to above:
         $(document).unbind("keydown", this.handle_keydown);
         $(window).unbind("resize", this.handle_resize);
+        // And finally, get rid of all our audio data:
         if (this.audio)
             this.audio.destroy();
     },
@@ -134,12 +133,13 @@ var ClipView = Backbone.View.extend({
     render: function () {
         var sg = this;
         this.$el.fadeOut("fast", function () {
-            sg.$el.empty();
             var contents = _.template(sg.template, { id: sg.id });
             sg.$el.append(contents);
 
             sg.audio = new ClipAudio(sg, sg.id);
-            sg.waveform = new Waveform(sg, sg.$el.find("#waveform"), sg.audio);
+
+            sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
+            sg.playmarker = new Playmarker(sg, "#clipsvg");
 
             sg.$el.fadeIn("fast");
             window.scrollTo(0, 0);
@@ -161,11 +161,7 @@ var ClipView = Backbone.View.extend({
     },
 
     handle_resize: function (e) {
-        if (this.waveform) {
-            this.waveform.destroy();
-            this.waveform = new Waveform(this, this.$el.find("#waveform"), this.audio);
-            if (this.audio.data) this.waveform.render();
-        }
+        if (this.waveform) this.waveform.redraw();
     },
 
     update_selection: function (e) {
@@ -244,14 +240,13 @@ var Languishes = Backbone.Router.extend({
                 // https://github.com/documentcloud/backbone/issues/957
                 ls.$el.empty();
                 ls.$el.append(ls._cliplistview.render().el);
+                ls._cliplistview.trigger("view:bound_to_dom");
             }
         });
     },
 
     // Handle the "#clips/12345" fragment rendering:
     hashclips: function (id, range) {
-        console.log(this);
-        console.log("hashclips called with id " + id + ", range " + range);
         this._currentclip = id;
 
         if (this._clipview) this._clipview.destroy();
@@ -259,5 +254,6 @@ var Languishes = Backbone.Router.extend({
 
         this.$el.empty();
         this.$el.append(this._clipview.render().el);
+        this._clipview.trigger("view:bound_to_dom");
     }
 });

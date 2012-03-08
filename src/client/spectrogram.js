@@ -70,7 +70,5 @@ Spectrogram.prototype.draw_spectrogram = function () {
 };
 
 Spectrogram.prototype.render = function (target_div_name) {
-    this.raphael = Raphael(target_div_name, this.width, this.height);
-
     this.draw_spectrogram();
 };

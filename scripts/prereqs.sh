@@ -28,11 +28,11 @@ if [[ ! -f soundmanager2.js || ! -f soundmanager2.swf || ! -f soundmanager2_debu
     $CURLCMD $SOUNDMANAGER_URL/$SOUNDMANAGER_SHA1/swf/soundmanager2_debug.swf > soundmanager2_debug.swf
 fi
 
-if [[ ! -f raphael.js ]]; then
-    echo "Fetching raphael files..."
-    RAPHAEL_URL=https://raw.github.com/DmitryBaranovskiy/raphael
-    RAPHAEL_SHA1=300aa589f5a0ba7fce667cd62c7cdda0bd5ad904
-    $CURLCMD $RAPHAEL_URL/$RAPHAEL_SHA1/raphael.js > raphael.js
+if [[ ! -f d3.js ]]; then
+    echo "Fetching d3 files..."
+    D3_URL=https://raw.github.com/mbostock/d3
+    D3_SHA1=af2af6ac9080529d102aacfa57807371fd983d2b
+    $CURLCMD $D3_URL/$D3_SHA1/d3.v2.js > d3.js
 fi
 
 if [[ ! -f jquery.js ]]; then

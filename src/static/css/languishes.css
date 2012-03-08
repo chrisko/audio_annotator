@@ -15,7 +15,7 @@ body {
     margin:0;
     padding:0;
     height:100%;
-    font:100% normal verdana,arial,tahoma,"sans serif";
+    font:100% normal "verdana","arial","tahoma","sans serif";
 }
 
 #clipvis {
@@ -24,8 +24,8 @@ body {
     left:0;
     height:100%;
     width:100%;
-    /* visibility:visible; */
-    padding:20px 20px 20px 20px;
+    visibility:visible;
+    /*padding:20px 20px 20px 20px;*/
 }
 
 #spectrogram {
@@ -35,21 +35,45 @@ body {
     height:100%;
     width:100%;
     visibility:visible;
-    padding:20px 20px 20px 20px;
+    /*padding:20px 20px 20px 20px;*/
+
+    z-index:1;  /* Behind. */
 }
 
-#waveform {
+#clipsvg {
     position:absolute;
     top:0;
     left:0;
     height:100%;
     width:100%;
     visibility:visible;
-    padding:20px 20px 20px 20px;
+    /*padding:20px 20px 20px 20px;*/
 
-    z-index:1000;
+    z-index:10;
+}
+
+#waveform {
+    fill: none;
+    stroke: #000;
+    stroke-width: 2;
+    /*shape-rendering: crispEdges;*/
+
+    visibility:visible;
+    z-index:15;
     /* opacity:0.15;
     -moz-opacity:0.15;
     filter:alpha(opacity=15); */
-    visibility:visible;
+}
+
+#selection {
+    stroke: #F00;
+    fill: #F00;
+    opacity: 0.2;
+    z-index:20;
+}
+
+#playmarker {
+    stroke: #F00;
+    stroke-width: 2;
+    z-index:25;
 }

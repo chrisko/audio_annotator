@@ -30,12 +30,13 @@
             .script("/jquery.js")
             .script("/underscore.js").wait()
             .script("/soundmanager2.js")
-            .script("/raphael.js")
+            .script("/d3.js")
             .script("/socket.io/socket.io.js")
             .script("/backbone.js").wait()
             // My own scripts:
             .script("/app.js")
             .script("/clipaudio.js")
+            .script("/playmarker.js")
             .script("/waveform.js")
             .wait(function () {
                 $(document).ready(function () {
