@@ -62,7 +62,12 @@ Playmarker.prototype.update = function (pos, dur) {
 
 Playmarker.prototype.pause = function (where) {
     if (!this.svg) return;
-    if (this.svg.select("#playmarker").empty()) return;
+    if (this.svg.select("#playmarker").empty()) {
+        this.svg.append("line")
+            .attr("id", "playmarker")
+            .attr("y1", 0)
+            .attr("y2", this.height());
+    }
 
     var xpos = where * this.width();
 

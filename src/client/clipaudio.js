@@ -60,6 +60,7 @@ ClipAudio.prototype.toggle_audio = function () {
 
     if (this.sound.paused) {
         this.sound.resume();
+        this.delegate.trigger("audio:playing", this.sound.position, this.sound.duration);
         return;
     }
 
@@ -69,6 +70,7 @@ ClipAudio.prototype.toggle_audio = function () {
         this.delegate.trigger("audio:paused",
                               this.sound.position / this.sound.duration);
 
+        this.sound.from = this.sound.position;
         this.sound.setPosition(this.sound.position);
 
         return;
@@ -89,6 +91,7 @@ ClipAudio.prototype.toggle_audio = function () {
                 this.delegate.trigger("audio:paused", this.position / this.duration);
         },
         onfinish: function () {
+            console.log("done playing!");
             ca.delegate.trigger("audio:done_playing");
         }
     });
@@ -112,4 +115,6 @@ ClipAudio.prototype.cue_up_portion = function (start, end) {
     this.sound.setPosition(this.sound.from);
     if (start < end)
         this.sound.to = end * this.sound.duration;
+
+    console.log("from: " + this.sound.from + ", to: " + this.sound.to);
 };

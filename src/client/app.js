@@ -24,26 +24,77 @@ var Segment = Backbone.Model.extend({
     }
 });
 
+var ClipNameView = Backbone.View.extend({
+    // To be rendered as an element in a <ul> list:
+    tagName: "li",
+
+    // view-source:http://documentcloud.github.com/backbone/examples/todos/index.html
+    template: "<div class=\"clipname\">"
+              + "<div class=\"clipdisplay\">"
+                + "<div class=\"clipname\"></div>"
+                + "<span class=\"clipduration\"></div>"
+                + "<span class=\"clipadded\"></div>"
+              + "</div>"
+              + "<div class=\"clipedit\">"
+                + "<input class=\"clipinput\" type=\"text\" value=\"\" />"
+              + "</div>"
+            + "</div>"
+});
+
 var ClipListView = Backbone.View.extend({
-    template: "<ul class=\"playlist dark\">"
+    template: "<ul id=\"cliplist\" class=\"playlist dark\">"
             + "<% _.each(clips, function (clip) { %>"
               + "<li>"
-                + "<a href=\"#clips/<%= clip.id %>\">"
-                  + "<%= clip.name || clip.id %>"
-                + "</a>"
+                + "<div class=\"clipdisplay\">"
+                  + "<a class=\"cliplink\" href=\"#clips/<%= clip.id %>\">"
+                    + "<%= clip.name || clip.id %>"
+                  + "</a>"
+                + "</div>"
+                + "<div class=\"clipedit\">"
+                  + "<input class=\"clipinput\" type=\"text\" value=\"\" />"
+                + "</div>"
               + "</li>"
             + "<% }); %>",
 
+    events: {
+        "dblclick div.cliplink": "edit",
+        "keypress .clipinput": "update_on_enter"
+    },
+
+    initialize: function () {
+        this.model.bind("reset", this.addAll, this);
+        //this.model.bind("all", this.render, this);
+    },
+
     render: function () {
-        var sg = this;
+        var clv = this;
         this.$el.fadeOut("fast", function () {
-            sg.$el.empty();
-            var contents = _.template(sg.template, { clips: sg.model.toArray() });
-            sg.$el.html(contents);
-            sg.$el.fadeIn("fast");
+            var clip_array = clv.model.toArray();
+            var contents = _.template(clv.template, { clips: clip_array });
+            clv.$el.html(contents);
+            clv.$el.fadeIn("fast");
         });
 
         return this;
+    },
+
+    addAll: function () {
+    },
+
+    edit: function () {
+        console.log("edit!");
+        // Change the element's class so our CSS can re-style it:
+        this.$el.addClass("editing");
+        this.$(".clipinput").focus();
+    },
+
+    update_on_enter: function (e) {
+        if (e.keyCode != 13) return;
+        console.log("update!");
+        //var text = this.input.val();
+        //if (!text || e.keyCode != 13) return;
+        //Todos.create({text: text});
+        //this.input.val("");
     }
 });
 
@@ -56,7 +107,7 @@ var ClipView = Backbone.View.extend({
     events: {
         // UI Events:
         "mouseenter #clipvis": function () { this.$el.css("cursor", "crosshair"); },
-        "mouseleave #clipvis": function () { this.$el.css("cursor", "auto"); },
+        "mouseleave #clipvis": function () { this.$el.css("cursor", "auto"); }
     },
 
     template: "<center>"
@@ -147,10 +198,8 @@ var Languishes = Backbone.Router.extend({
     // Handle the "no fragment" (or I guess empty fragment) page rendering.
     index: function () {
         this._currentclip = null;
-        if (!this._cliplist) {
+        if (!this._cliplist)
             this._cliplist = new ClipList;
-            this._cliplist.fetch();
-        }
 
         var ls = this;
         this._cliplist.fetch({
@@ -163,7 +212,7 @@ var Languishes = Backbone.Router.extend({
                 // For more on this pattern, see
                 // https://github.com/documentcloud/backbone/issues/957
                 ls.$el.empty();
-                ls.$el.append(ls._cliplistview.render().el);
+                ls.$el.append(ls._cliplistview.render(true).el);
                 ls._cliplistview.trigger("view:bound_to_dom");
             }
         });
@@ -177,7 +226,7 @@ var Languishes = Backbone.Router.extend({
         this._clipview = new ClipView({ id: id });
 
         this.$el.empty();
-        this.$el.append(this._clipview.render().el);
+        this.$el.append(this._clipview.render(true).el);
         this._clipview.trigger("view:bound_to_dom");
     }
 });
