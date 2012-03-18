@@ -6,49 +6,10 @@ var assert = require("assert"),
     fs = require("fs"),
     path = require("path");
 
-var CLIP_DURATION = 5;
+var CLIP_DURATION = 5;  // In seconds.
 var OUTPUT_DIR = "site/data/new";
 
-////////////////////////////////////////////////////////////////////////////////
-function splice_file(filename, audio_info) {
-    // 
-    var samples = audio_info["Duration"].match(/(\d+) samples/)[1];
-    var sample_rate = audio_info["Sample Rate"];
-    var duration = CLIP_DURATION * sample_rate;
-
-    var basename = path.basename(filename);
-
-    // Pick a random start point, and splice the audio right there:
-    var start = Math.floor(Math.random() * (samples - duration));
-    var cmd = "sox \"" + filename + "\" \"" + OUTPUT_DIR + "/" + basename + "\""
-            + " trim " + start + "s " + duration + "s";
-
-    console.log(cmd);
-    exec(cmd, function (error, stdout, stderr) {
-        if (error) { console.log(stderr); }
-        assert(typeof(error) !== "null");
-    });
-}
-
-function get_audio_info(filename, callback) {
-    exec("soxi \"" + filename + "\"", function (error, stdout, stderr) {
-        if (error) { console.log(stderr); }
-        assert(typeof(error) !== "null");
-
-        var audio_info = { };
-        var lines = stdout.split("\n");
-        for (l in lines) {
-            var match = lines[l].match(/^(.+?)\s*:\s*(.+)$/);
-            if (match) {
-                audio_info[match[1]] = match[2];
-            }
-        }
-
-        callback(filename, audio_info);
-    });
-}
-
-////////////////////////////////////////////////////////////////////////////////
+// Given a list, return a randomly shuffled copy.
 function shuffle(list) {
     var shuffled_list = [ ];
     while (list.length > 0) {
@@ -58,23 +19,105 @@ function shuffle(list) {
     return shuffled_list;
 }
 
-var buckeye = "/Users/ckoenig/src/buckeye/data";
-exec("find \"" + buckeye + "\" -iname \"*.wav\"", function (error, stdout, stderr) {
-    assert(stderr.length == 0);
-    var buckeye_files = stdout.split("\n");
+// Get the SoX audio info for an audio file, consisting of a map of such
+// keys as Duration, Sample Rate, and some others I care less about.
+function get_audio_info(filename, cb) {
+    var cmd = "soxi \"" + filename + "\"";
+    exec(cmd, function (error, stdout, stderr) {
+        if (error) { cb(stderr, null); }
+        assert(typeof(error) !== "null");
 
-    var shuffled = shuffle(buckeye_files);
-    var i; for (i = 0; i < 10; i++) {
-        // Get the audio info, then splice up the file:
-        get_audio_info(shuffled[i], splice_file);
+        var audio_info = { };
+        var lines = stdout.split("\n");
+        for (l in lines) {
+            var match = lines[l].match(/^(.+?)\s*:\s*(.+)$/);
+            if (match) audio_info[match[1]] = match[2];
+        }
+
+        cb(null, audio_info);
+    });
+}
+
+// Sample a few seconds of this audio file.
+function splice_file(filename, audio_info, cb) {
+    // From the information we already parsed out in get_audio_info() above,
+    // extract the Duration and Sample Rate, and calculate the duration.
+    var samples = audio_info["Duration"].match(/(\d+) samples/)[1];
+    var sample_rate = audio_info["Sample Rate"];
+    var duration = CLIP_DURATION * sample_rate;
+
+    var output_file = OUTPUT_DIR + "/" + path.basename(filename);
+    // Pick a random start point, and splice the audio right there:
+    var start = Math.floor(Math.random() * (samples - duration));
+    var cmd = "sox \"" + filename + "\" \"" + output_file + "\""
+            + " trim " + start + "s " + duration + "s";
+
+    console.log(cmd);
+    exec(cmd, function (error, stdout, stderr) {
+        if (error) { cb(stderr, null); }
+        cb(null, stdout);
+    });
+}
+
+// Do all the processing asynchronously, passing each one's results
+async.waterfall([
+    // Add the Buckeye Corpus filenames:
+    function (cb) {
+        var buckeye = "/Users/ckoenig/src/buckeye/data";
+        var find_cmd = "find \"" + buckeye + "\" -iname \"*.wav\"";
+        exec(find_cmd, function (error, stdout, stderr) {
+            cb(error ? stderr : null, stdout.split("\n"));
+        });
+    },
+
+    // Then list out the B2W filenames, appending them to the list:
+    //"b2wfiles": function (filenames, cb) {
+    //    var itunes = "/Users/ckoenig/Music/iTunes/iTunes Music";
+    //    var b2w = itunes + "/Podcasts/Back to Work";
+    //    fs.readdir(b2w, function (err, b2wfiles) {
+    //        cb(err, filenames.concat(b2wfiles));
+    //    });
+    //},
+
+    // Next grab five randomly-selected files:
+    function (filenames, cb) {
+        var audio_info = [ ];
+        var shuffled = shuffle(filenames).splice(0, 5);
+
+        // One by one, get the audio properties of each filename:
+        async.forEachSeries(shuffled,
+            // For every filename in the shuffled array, do this (in series):
+            function (item, cb2) {
+                // Asynchronously get the audio info for this file:
+                get_audio_info(item, function (err, this_info) {
+                    // And append it to the list, before the callback:
+                    if (this_info) audio_info.push(this_info);
+                    cb2(err);
+                });
+            },
+            // After all the above calls have been made:
+            function (err) {
+                // Pass the audio_info array on to the next stage:
+                cb(err, audio_info);
+            }
+        );
+    },
+
+    // By now we have all the audio info, so splice out 5s from each clip:
+    function (audio_info, cb) {
+        async.forEachSeries(audio_info,
+            function (item, cb2) {
+                var filename = item["Input File"].replace(/'/g, "");
+                splice_file(filename, item, function (err, stdout) {
+                    cb2(err);
+                });
+            },
+            function (err) {
+                if (err) {
+                    console.log(err);
+                    process.exit(1);
+                }
+            }
+        );
     }
-});
-
-//var b2w = "/Users/ckoenig/Music/iTunes/iTunes Music/Podcasts/Back to Work";
-//var b2w_files = fs.readdirSync(b2w);
-//var b2w_shuffled = shuffle(b2w_files);
-//
-//var i; for (i = 0; i < 10; i++) {
-//    var full_filename = b2w + "/" + b2w_shuffled[i];
-//    get_audio_info(full_filename, splice_file);
-//}
+]);
