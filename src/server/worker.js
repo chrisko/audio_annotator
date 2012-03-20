@@ -6,6 +6,8 @@
 var async = require("async"),
     util = require("util");
 
+var xlabel = require("./xlabel.js");
+
 ////////////////////////////////////////////////////////////////////////////////
 function Worker(clip_library) {
     if (!clip_library)
@@ -54,6 +56,25 @@ Worker.prototype.operations = {
             } else {
                 cb(task, true);
             }
+        });
+    },
+
+    "import segments": function (task, cb) {
+        if (!task.source) {
+            task.error = "No source file given.";
+            return cb(task, false);
+        }
+
+        if (!task.clip_id) {
+            task.error = "No clip id given.";
+            return cb(task, false);
+        }
+
+        var cl = this.clip_library;
+        xlabel.parse_xlabel_file(task.source, function (result) {
+            // The range may be null, in which case nothing will change.
+            var remapped = xlabel.remap_to_range(result, task.range);
+            cl.add_xlabel_segments_for_clip(task.clip_id, task.layer, remapped);
         });
     }
 };

@@ -136,6 +136,47 @@ ClipLibrary.prototype.add_new_clip = function (clip_filename, cb) {
     });
 };
 
+ClipLibrary.prototype.add_segment = function (clip_id, segment) {
+    assert(segment.start != null, segment.end != null);
+
+    // Get the next segment id for this clip:
+    var client = this.redis;
+    this.redis.incr("clip:" + clip_id + ":segment:next", function (err, id) {
+        var multi = client.multi();
+        // Add the hash keys for this segment, giving all its info:
+        multi.hmset("clip:" + clip_id + ":segment:" + id + ":info",
+            "added", Date.now(),
+            "layer", segment.layer,
+            "label", segment.label,
+            "start", segment.start,
+            "end", segment.end
+        );
+
+        // Next add the segment to the ordered set of segments
+        // for this clip, by the segment's starting time:
+        multi.zadd("clip:" + clip_id + ":segments", segment.start, id);
+
+        // Now kick it all off:
+        multi.exec();
+    });
+};
+
+ClipLibrary.prototype.add_xlabel_segments_for_clip = function (clip_id, layer, xlabel) {
+    var current = 0;
+    for (i in xlabel.data) {
+        var this_segment = xlabel.data[i];
+        // The same duration may have multiple different labels:
+        for (j in this_segment[1]) {
+            this.add_segment(clip_id, { "layer": layer,
+                                        "label": this_segment[1][j],
+                                        "start": current,
+                                        "end": current + parseFloat(this_segment[0]) });
+        }
+
+        current += parseFloat(this_segment[0]);
+    }
+};
+
 ClipLibrary.prototype.get_all_clips = function (cb) {
     this.redis.keys("clip:*:filename", function (err, replies) {
         var clip_ids = [ ];

@@ -4,7 +4,11 @@ var assert = require("assert"),
     async = require("async"),
     exec = require("child_process").exec,
     fs = require("fs"),
-    path = require("path");
+    path = require("path"),
+    redis = require("redis");
+
+var ClipLibrary = require("../src/server/cliplibrary.js"),
+    xlabel = require("../src/server/xlabel.js");
 
 var CLIP_DURATION = 5;  // In seconds.
 var OUTPUT_DIR = "site/data/new";
@@ -55,7 +59,7 @@ function splice_file(filename, audio_info, cb) {
     console.log(cmd);
     exec(cmd, function (error, stdout, stderr) {
         if (error) { cb(stderr, null); }
-        cb(null, stdout);
+        cb(null, output_file, [ start, start + duration ]);
     });
 }
 
@@ -87,18 +91,17 @@ async.waterfall([
         // One by one, get the audio properties of each filename:
         async.forEachSeries(shuffled,
             // For every filename in the shuffled array, do this (in series):
-            function (item, cb2) {
+            function (item, foreach_cb) {
                 // Asynchronously get the audio info for this file:
                 get_audio_info(item, function (err, this_info) {
                     // And append it to the list, before the callback:
                     if (this_info) audio_info.push(this_info);
-                    cb2(err);
+                    foreach_cb(err);  // Process the next item in this series.
                 });
             },
             // After all the above calls have been made:
             function (err) {
-                // Pass the audio_info array on to the next stage:
-                cb(err, audio_info);
+                cb(err, audio_info);  // Go to the next waterfall stage.
             }
         );
     },
@@ -106,18 +109,65 @@ async.waterfall([
     // By now we have all the audio info, so splice out 5s from each clip:
     function (audio_info, cb) {
         async.forEachSeries(audio_info,
-            function (item, cb2) {
+            function (item, foreach_cb) {
                 var filename = item["Input File"].replace(/'/g, "");
-                splice_file(filename, item, function (err, stdout) {
-                    cb2(err);
+                splice_file(filename, item, function (err, filename, range) {
+                    item["Clip File"] = filename;
+                    item["Clip Range"] = range;
+                    foreach_cb(err);  // Process the next item in this series.
                 });
             },
             function (err) {
-                if (err) {
-                    console.log(err);
-                    process.exit(1);
-                }
+                cb(err, audio_info);  // Go to the next waterfall stage.
             }
         );
+    },
+
+    // Next, set up jobs to extract segments from the .words and .phones files:
+    function (audio_info, cb) {
+        var client = redis.createClient();
+        for (i in audio_info) {
+            var item = audio_info[i];
+            var filename = item["Input File"].replace(/'/g, "");
+
+            // Convert the Clip Range from samples to seconds:
+            var sample_range = item["Clip Range"];
+            var num_samples = sample_range[1] - sample_range[0];
+            var duration_in_s = audio_info["Sample Rate"] * num_samples;
+
+            ClipLibrary.prototype.checksum(item["Clip File"], function (err, digest) {
+                console.log("Checksum of " + item["Clip File"] + ": " + digest);
+                var clip_id = ClipLibrary.prototype.checksum_to_id(digest);
+
+                async.parallel([
+                    // Add one job for the .words file:
+                    function (pcb) {
+                        var wordsfile = filename.replace(/\.wav$/, ".words");
+                        client.lpush("work_queue",
+                            JSON.stringify({ op: "import segments",
+                                             clip_id: clip_id,
+                                             source: wordsfile,
+                                             layer: "words",
+                                             pri: "low" }),
+                            function (err, result) { pcb(); }
+                        );
+                    },
+
+                    // And another for the .phones file:
+                    function (pcb) {
+                        var phonesfile = filename.replace(/\.wav$/, ".phones");
+                        client.lpush("work_queue",
+                            JSON.stringify({ op: "import segments",
+                                             clip_id: clip_id,
+                                             source: phonesfile,
+                                             layer: "phones",
+                                             pri: "low" }),
+                            function (err, result) { pcb(); }
+                        );
+                    }
+                ],
+                function (err, results) { cb(); } );
+            });
+        }
     }
 ]);
