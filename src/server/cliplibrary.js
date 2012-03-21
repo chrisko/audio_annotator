@@ -143,8 +143,8 @@ ClipLibrary.prototype.add_segment = function (clip_id, segment) {
     var client = this.redis;
     this.redis.incr("clip:" + clip_id + ":segment:next", function (err, id) {
         var multi = client.multi();
-        // Add the hash keys for this segment, giving all its info:
-        multi.hmset("clip:" + clip_id + ":segment:" + id + ":info",
+        // Add the hash keys for this segment, giving all its details:
+        multi.hmset("clip:" + clip_id + ":segment:" + id,
             "added", Date.now(),
             "layer", segment.layer,
             "label", segment.label,
@@ -190,14 +190,15 @@ ClipLibrary.prototype.get_all_clips = function (cb) {
 };
 
 ClipLibrary.prototype.get_clip_segments = function (clip_id, cb) {
-    this.redis.keys("clip:" + clip_id + ":segment:*", function (err, replies) {
-        var segments = [ ];
-        for (r in replies) {
-            var matches = replies[r].match(/^clip:.+?:segment:(.+)$/);
-            segments.push({ id: matches[1] });
-        }
+    this.redis.zrange("clip:" + clip_id + ":segments", 0, 100000, function (err, replies) {
+        cb(replies);
+    });
+};
 
-        cb(segments);
+ClipLibrary.prototype.get_segment = function (clip_id, segment_id, cb) {
+    var key = "clip:" + clip_id + ":segment:" + segment_id;
+    this.redis.hgetall(key, function (err, result) {
+        cb(result);
     });
 };
 

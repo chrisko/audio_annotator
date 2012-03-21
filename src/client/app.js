@@ -14,16 +14,6 @@ var ClipList = Backbone.Collection.extend({
     }
 });
 
-var Segment = Backbone.Model.extend({
-    defaults: {
-        "id": null,
-        "begin": null,
-        "end": null,
-        "layer": null,
-        "content": null
-    }
-});
-
 var ClipNameView = Backbone.View.extend({
     // To be rendered as an element in a <ul> list:
     tagName: "li",
@@ -147,6 +137,7 @@ var ClipView = Backbone.View.extend({
 
             sg.audio = new ClipAudio(sg, sg.id);
             sg.playmarker = new Playmarker(sg, "#clipsvg");
+            sg.segments = new Segments(sg, "#clipsvg");
             sg.selection = new Selection(sg, "#clipsvg");
             sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
 
@@ -213,6 +204,9 @@ var Languishes = Backbone.Router.extend({
                 // https://github.com/documentcloud/backbone/issues/957
                 ls.$el.empty();
                 ls.$el.append(ls._cliplistview.render(true).el);
+
+                // Some things (like D3 selections) won't work until the view
+                // is actually bound to the DOM. Trigger those events now.
                 ls._cliplistview.trigger("view:bound_to_dom");
             }
         });

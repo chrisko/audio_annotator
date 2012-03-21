@@ -169,8 +169,16 @@ languishes.get("/clips/:id/spectrogram", function (req, res) {
 });
 
 languishes.get("/clips/:id/segments", function (req, res) {
-    languishes.clip_library.get_clip_segments(function (segments) {
+    var clip_id = req.params.id;
+    languishes.clip_library.get_clip_segments(clip_id, function (segments) {
         res.json(segments);
+    });
+});
+
+languishes.get("/clips/:clipid/segment/:segmentid", function (req, res) {
+    var clip_id = req.params.clipid, segment_id = req.params.segmentid;
+    languishes.clip_library.get_segment(clip_id, segment_id, function (segment) {
+        res.json(segment);
     });
 });
 

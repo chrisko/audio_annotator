@@ -75,6 +75,7 @@ Worker.prototype.operations = {
             // The range may be null, in which case nothing will change.
             var remapped = xlabel.remap_to_range(result, task.range);
             cl.add_xlabel_segments_for_clip(task.clip_id, task.layer, remapped);
+            cb(task, true);
         });
     }
 };

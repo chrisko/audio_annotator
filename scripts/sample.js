@@ -7,8 +7,7 @@ var assert = require("assert"),
     path = require("path"),
     redis = require("redis");
 
-var ClipLibrary = require("../src/server/cliplibrary.js"),
-    xlabel = require("../src/server/xlabel.js");
+var ClipLibrary = require("../src/server/cliplibrary.js");
 
 var CLIP_DURATION = 5;  // In seconds.
 var OUTPUT_DIR = "site/data/new";
@@ -126,8 +125,7 @@ async.waterfall([
     // Next, set up jobs to extract segments from the .words and .phones files:
     function (audio_info, cb) {
         var client = redis.createClient();
-        for (i in audio_info) {
-            var item = audio_info[i];
+        async.forEachSeries(audio_info, function (item, foreach_cb) {
             var filename = item["Input File"].replace(/'/g, "");
 
             // Convert the Clip Range from samples to seconds:
@@ -139,35 +137,36 @@ async.waterfall([
                 console.log("Checksum of " + item["Clip File"] + ": " + digest);
                 var clip_id = ClipLibrary.prototype.checksum_to_id(digest);
 
-                async.parallel([
-                    // Add one job for the .words file:
-                    function (pcb) {
-                        var wordsfile = filename.replace(/\.wav$/, ".words");
-                        client.lpush("work_queue",
-                            JSON.stringify({ op: "import segments",
-                                             clip_id: clip_id,
-                                             source: wordsfile,
-                                             layer: "words",
-                                             pri: "low" }),
-                            function (err, result) { pcb(); }
-                        );
-                    },
+                // Add one job for the .words file:
+                var wordsfile = filename.replace(/\.wav$/, ".words");
+                var multi = client.multi();
 
-                    // And another for the .phones file:
-                    function (pcb) {
-                        var phonesfile = filename.replace(/\.wav$/, ".phones");
-                        client.lpush("work_queue",
-                            JSON.stringify({ op: "import segments",
-                                             clip_id: clip_id,
-                                             source: phonesfile,
-                                             layer: "phones",
-                                             pri: "low" }),
-                            function (err, result) { pcb(); }
-                        );
-                    }
-                ],
-                function (err, results) { cb(); } );
+                multi.lpush("work_queue",
+                    JSON.stringify({ op: "import segments",
+                                     clip_id: clip_id,
+                                     source: wordsfile,
+                                     layer: "words",
+                                     pri: "low" })
+                );
+
+                // And another for the .phones file:
+                var phonesfile = filename.replace(/\.wav$/, ".phones");
+                multi.lpush("work_queue",
+                    JSON.stringify({ op: "import segments",
+                                     clip_id: clip_id,
+                                     source: phonesfile,
+                                     layer: "phones",
+                                     pri: "low" })
+                );
+
+                multi.exec(function (err, replies) {
+                    foreach_cb();
+                });
             });
-        }
+        },
+        // After looping through the above async.forEach, this is called:
+        function (err) {
+            cb(err);
+        });
     }
 ]);
