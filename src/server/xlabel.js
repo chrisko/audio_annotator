@@ -5,10 +5,13 @@
 
 var fs = require("fs");
 
-var HEADER_MARKER = /^#$/;  // Separates the header from the actual data.
+var HEADER_MARKER = /^#\s*$/;  // Separates the header from the actual data.
 var SEPARATOR = ";";  // Might be overridden by the header. Won't be, though.
 
 exports.parse_xlabel_file = function (filename, cb) {
+    if (filename.match(/s3504a.words$/))
+        console.log("(s3504a.words is expected to fail, just FYI.)");
+
     fs.readFile(filename, "utf8", function (err, data) {
         if (err) throw err;
         cb(exports.parse_xlabel(data.split("\n")));
@@ -38,11 +41,15 @@ exports.parse_xlabel = function (lines) {
                 continue;
             }
 
-            var matches = lines[line].match(/^(\S+)\s+(.+)$/);
+            // A bunch of the Buckeye files don't have a space here; add it.
+            if (lines[line] == "separator;") lines[line] = "separator ;";
+
+            var matches = lines[line].match(/^(\S+)\s+(.+)\s*$/);
             if (!matches) throw "No matches for header line " + lines[line];
             header[matches[1]] = matches[2];
         } else {
-            var matches = lines[line].match(/^\s*([\d\.]+)\s+(\d+)\s+(.+)$/);
+            // The third column, the label, is sometimes blank. Accept it.
+            var matches = lines[line].match(/^\s*([\d\-\.]+)\s+(\d+)\s*(.*)\s*$/);
             if (!matches) throw "No matches for line " + lines[line];
             var duration = matches[1];
             var color = matches[2];  // Useless and dumb. Ignored.
