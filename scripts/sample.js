@@ -131,7 +131,7 @@ async.waterfall([
             // Convert the Clip Range from samples to seconds:
             var sample_range = item["Clip Range"];
             var num_samples = sample_range[1] - sample_range[0];
-            var duration_in_s = audio_info["Sample Rate"] * num_samples;
+            var duration_in_s = item["Sample Rate"] * num_samples;
 
             ClipLibrary.prototype.checksum(item["Clip File"], function (err, digest) {
                 console.log("Checksum of " + item["Clip File"] + ": " + digest);
@@ -145,6 +145,7 @@ async.waterfall([
                     JSON.stringify({ op: "import segments",
                                      clip_id: clip_id,
                                      source: wordsfile,
+                                     range: item["Clip Range"],
                                      layer: "words",
                                      pri: "low" })
                 );
@@ -155,6 +156,7 @@ async.waterfall([
                     JSON.stringify({ op: "import segments",
                                      clip_id: clip_id,
                                      source: phonesfile,
+                                     range: item["Clip Range"],
                                      layer: "phones",
                                      pri: "low" })
                 );

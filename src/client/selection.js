@@ -61,7 +61,8 @@ Selection.prototype.width = function () {
 Selection.prototype.destroy = function () {
     // Triggering redraw_selection with null erases the current selection.
     this.redraw(null);
-    this.svg.select("#selection").remove();
+    if (this.svg)
+        this.svg.select("#selection").remove();
 };
 
 Selection.prototype.update = function (new_x, finalize) {

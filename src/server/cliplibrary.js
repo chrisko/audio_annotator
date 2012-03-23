@@ -145,6 +145,7 @@ ClipLibrary.prototype.add_segment = function (clip_id, segment) {
         var multi = client.multi();
         // Add the hash keys for this segment, giving all its details:
         multi.hmset("clip:" + clip_id + ":segment:" + id,
+            "id", id,
             "added", Date.now(),
             "layer", segment.layer,
             "label", segment.label,

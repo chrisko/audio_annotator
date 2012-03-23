@@ -137,7 +137,7 @@ var ClipView = Backbone.View.extend({
 
             sg.audio = new ClipAudio(sg, sg.id);
             sg.playmarker = new Playmarker(sg, "#clipsvg");
-            sg.segments = new Segments(sg, "#clipsvg");
+            sg.segments = new Segments(sg, sg.id, "#clipsvg");
             sg.selection = new Selection(sg, "#clipsvg");
             sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
 
@@ -161,7 +161,10 @@ var ClipView = Backbone.View.extend({
     },
 
     handle_resize: function (e) {
-        if (this.waveform) this.waveform.redraw();
+        if (this.waveform) {
+            this.waveform.destroy();
+            this.waveform.render();
+        }
     },
 
     handle_reset_play_marker: function () {
