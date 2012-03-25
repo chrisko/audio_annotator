@@ -22,15 +22,15 @@ var SegmentList = Backbone.Collection.extend({
     }
 });
 
-function Segments(delegate, clip_id, svg_id) {
+function Segments(delegate, clip, svg_id) {
     this.delegate = delegate;
-    this.clip_id = clip_id;
+    this.clip = clip;
     this.svg_id = svg_id;
     this.loaded = false;
 
-    this.collection = new SegmentList({ clip_id: clip_id });
-    this.collection.clip_id = clip_id;
-    this.collection.url = "/clips/" + clip_id + "/segments/all";
+    this.collection = new SegmentList({ clip_id: this.clip.id });
+    this.collection.clip_id = this.clip.id;
+    this.collection.url = "/clips/" + this.clip.id + "/segments/all";
 
     var s = this;
     this.collection.fetch({
@@ -66,6 +66,43 @@ Segments.prototype.width = function () {
     return $(this.svg_id).width();
 };
 
+Segments.prototype.do_ranges_overlap = function (range1, range2) {
+    var r1unbounded = (_.isNull(range1[0]) || _.isNull(range1[1]));
+    var r2unbounded = (_.isNull(range2[0]) || _.isNull(range2[1]));
+
+    if (r1unbounded || r2unbounded) {
+        // First case: if either of the ranges is totally unbounded (i.e.,
+        // [ null, null ]), they definitely overlap.
+        if (_.isNull(range1[0]) && _.isNull(range1[1])) return true;
+        if (_.isNull(range2[0]) && _.isNull(range2[1])) return true;
+
+        // Next, if both ranges are unbounded in the same direction:
+        if (_.isNull(range1[0]) && _.isNull(range2[0])) return true;
+        if (_.isNull(range1[1]) && _.isNull(range2[1])) return true;
+
+        if (r1unbounded && r2unbounded) {
+            // So they're unbounded in opposite directions
+            if (_.isNull(range1[0])) {
+                return (range1[1] >= range2[0]);
+            } else {
+                return (range1[0] <= range2[1]);
+            }
+        }
+
+        // So just one is unbounded.
+        if (_.isNull(range1[0])) return (range2[0] <= range1[1]);
+        if (_.isNull(range1[1])) return (range2[1] >= range1[0]);
+        if (_.isNull(range2[0])) return (range1[0] <= range2[1]);
+        if (_.isNull(range2[1])) return (range1[1] >= range2[0]);
+    } else {
+        // If both ranges are bounded, there's a quick test
+        // http://c2.com/cgi/wiki?TestIfDateRangesOverlap
+        if (!(range1[1] <= range2[0] || range2[1] <= range1[0])) return true;
+    }
+
+    return false;
+};
+
 Segments.prototype.render = function (range) {
     // We can't render until we've loaded the data and looked up our SVG.
     if (!this.loaded || !this.svg) return;
@@ -76,6 +113,10 @@ Segments.prototype.render = function (range) {
         var this_segment = this.collection.at(i);
         console.log("appending segment " + this_segment.get("start")
                                    + "-" + this_segment.get("end"));
+
+        console.log("transformed: " + this_segment.get("start") / this.clip.start,
+                                    + "-" + this_segment.get("end") / this.clip.end);
+        console.log(this.clip);
 
         /*
         this.svg.append("line")

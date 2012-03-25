@@ -86,6 +86,12 @@ languishes.get("/clips", function (req, res) {
     });
 });
 
+languishes.get("/clips/all", function (req, res) {
+    languishes.clip_library.get_all_clips(function (ids) {
+        res.json(ids);
+    });
+});
+
 languishes.get("/record", function (req, res) {
     res.render("record.html", { });
 });
@@ -137,7 +143,7 @@ languishes.get("/clips/:id/data", function (req, res) {
     });
 });
 
-languishes.get("/clips/:id/info", function (req, res) {
+languishes.get("/clips/:id", function (req, res) {
     var filename = config.data_dir + req.params.id + ".wav";
     wav.parse_wav(filename,
         function (err) {
@@ -156,15 +162,32 @@ languishes.get("/clips/:id/info", function (req, res) {
 });
 
 languishes.get("/clips/:id/spectrogram", function (req, res) {
-    redis.get("clip:" + req.params.id + ":filename", function (err, filename) {
-        var cmd = "sox \"" + filename + "\" -n spectrogram -x 1280 -y 800 -m -r -l -o \"" + config.data_dir + "/spectrogram.png\"";
-        require("child_process").exec(cmd, function (error, stdout, stderr) {
-            if (error === null) {
-                res.sendfile(config.data_dir + "/spectrogram.png");
+    redis.hget("clip:" + req.params.id, "filename", function (err, filename) {
+        // Check to see if the spectrogram exists already. Otherwise, generate it.
+        var spectrogram_filename = config.data_dir + "/" + req.params.id + ".png";
+        path.exists(spectrogram_filename, function (exists) {
+            if (exists) {
+                res.sendfile(spectrogram_filename);
             } else {
-                console.log("sox exec error: " + error);
+                var cmd = "sox \"" + filename + "\" -n spectrogram "
+                        + "-x 1280 -y 800 -m -r -l -o \""
+                        + spectrogram_filename + "\"";
+
+                require("child_process").exec(cmd, function (error, stdout, stderr) {
+                    if (error) {
+                        console.log("sox exec error: " + error);
+                    } else {
+                        res.sendfile(spectrogram_filename);
+                    }
+                });
             }
         });
+    });
+});
+
+languishes.get("/clips/all", function (req, res) {
+    languishes.clip_library.get_all_clips(function (all_clips) {
+        res.json(all_clips);
     });
 });
 

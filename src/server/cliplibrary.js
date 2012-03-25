@@ -11,6 +11,8 @@ var assert = require("assert"),
     redis = require("redis"),
     util = require("util");
 
+var wav = require("./wav.js");
+
 ////////////////////////////////////////////////////////////////////////////////
 // Synchronously initialize the clip library.
 function ClipLibrary(dirname, redis_instance) {
@@ -45,7 +47,7 @@ ClipLibrary.prototype.audit_contents = function (laboriously) {
     //async.filter(fs.readdirSync(this.directory_name), function (filename) { 
     var files = fs.readdirSync(this.directory_name);
     for (f in files) {
-        if (files[f] == "new" || files[f] == "spectrogram.png") continue;
+        if (files[f] == "new" || files[f].match(/\.png$/)) continue;
 
         var file_path = this.directory_name + "/" + files[f];
         var extension = path.extname(file_path);
@@ -104,35 +106,58 @@ ClipLibrary.prototype.checksum_to_id = function (checksum) {
 ClipLibrary.prototype.add_new_clip = function (clip_filename, cb) {
     var sg = this;
     this.checksum(clip_filename, function (err, sha1_checksum) {
-        if (err) {
-            return cb("Error calculating checksum of new clip: " + err);
-        }
+        if (err) return cb("Error calculating checksum of new clip: " + err);
 
         // Convert the SHA-1 checksum to the more compressed clip id:
         var new_clip_id = sg.checksum_to_id(sha1_checksum);
-
         var extension = path.extname(clip_filename);
-        var dbkey = "clip:" + new_clip_id + ":filename";
-        sg.redis.get(dbkey, function (err, res) {
-            if (res) {
-                console.log("New file " + clip_filename + " checksum "
-                          + new_clip_id + " already appears in the library.");
-                fs.unlink(clip_filename, function (err) {
-                    return cb(err);
-                });
-            } else {
-                var new_file = fs.createReadStream(clip_filename);
-                var imported_name = sg.directory_name + "/" + new_clip_id + extension;
-                var imported = fs.createWriteStream(imported_name);
+        // Here's where the file will be once it's imported:
+        var imported_name = sg.directory_name + "/" + new_clip_id + extension;
 
-                util.pump(new_file, imported, function () {
-                    sg.redis.set(dbkey, imported_name);
-                    fs.unlink(clip_filename, function (err) {
-                        cb(err);  // Return the error, if any.
-                    });
+        wav.parse_wav(clip_filename,
+            function (err) {
+                cb("Error parsing new file " + clip_filename + ": " + err);
+            },
+            function (wav) {
+                // Here's the key name and hash contents we intend to add:
+                var dbkey = "clip:" + new_clip_id;
+                var contents = {
+                    "id": new_clip_id,
+                    "added": Date.now(),
+                    "checksum": sha1_checksum,
+                    "filename": imported_name,
+                    // And the keys describing the clip's audio:
+                    "duration": wav.duration,
+                    "samples": wav.num_samples,
+                    "channels": wav.format.num_channels
+                };
+
+                // Add the new clip, but *only* if the key doesn't already exist.
+                sg.redis.exists(dbkey, function (err, exists) {
+                    if (exists) {
+                        console.log("New file " + clip_filename + " (checksum "
+                                  + new_clip_id + ") already appears in the library.");
+                        // Assuming the checksums were the same, remove the "new" file:
+                        fs.unlink(clip_filename, cb);
+                    } else {
+                        // Create the read and write streams to copy the file over:
+                        var new_file = fs.createReadStream(clip_filename);
+                        var imported = fs.createWriteStream(imported_name);
+                        // Copy the file from the "new" directory into "data":
+                        util.pump(new_file, imported, function () {
+                            // Asynchronously add the new clip to the collection:
+                            var multi = sg.redis.multi()
+                                .hmset(dbkey, contents)
+                                .sadd("clips", new_clip_id)
+                                .exec();
+
+                            // And remove the file from the "new" directory.
+                            fs.unlink(clip_filename, cb);  // Returns err, if any.
+                        });
+                    }
                 });
             }
-        });
+        );
     });
 };
 
@@ -179,13 +204,21 @@ ClipLibrary.prototype.add_xlabel_segments_for_clip = function (clip_id, layer, x
 };
 
 ClipLibrary.prototype.get_all_clips = function (cb) {
-    this.redis.keys("clip:*:filename", function (err, replies) {
-        var clip_ids = [ ];
-        for (r in replies) {
-            var matches = replies[r].match(/^clip:(.+):filename$/);
-            clip_ids.push({ id: matches[1] });
+    var cl = this;
+    this.get_all_clip_ids(function (ids) {
+        var multi = cl.redis.multi();
+        for (i in ids) {
+            multi.hgetall("clip:" + ids[i]);
         }
 
+        multi.exec(function (err, replies) {
+            cb(replies);
+        });
+    });
+};
+
+ClipLibrary.prototype.get_all_clip_ids = function (cb) {
+    this.redis.smembers("clips", function (err, clip_ids) {
         cb(clip_ids);
     });
 };
@@ -204,7 +237,7 @@ ClipLibrary.prototype.get_segment = function (clip_id, segment_id, cb) {
 };
 
 ClipLibrary.prototype.get_clip_location = function (clip_id, cb) {
-    this.redis.get("clip:" + clip_id + ":filename", function (err, res) {
+    this.redis.hget("clip:" + clip_id, "filename", function (err, res) {
         cb(res);
     });
 };

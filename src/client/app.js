@@ -91,6 +91,7 @@ var ClipListView = Backbone.View.extend({
 var ClipView = Backbone.View.extend({
     audio: null,
     playmarker: null,
+    range: null,
     selection: null,
     waveform: null,
 
@@ -135,11 +136,13 @@ var ClipView = Backbone.View.extend({
             var contents = _.template(sg.template, { id: sg.id });
             sg.$el.append(contents);
 
-            sg.audio = new ClipAudio(sg, sg.id);
-            sg.playmarker = new Playmarker(sg, "#clipsvg");
-            sg.segments = new Segments(sg, sg.id, "#clipsvg");
-            sg.selection = new Selection(sg, "#clipsvg");
-            sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
+            sg.model.fetch({ success: function () {
+                sg.audio = new ClipAudio(sg, sg.id);
+                sg.playmarker = new Playmarker(sg, "#clipsvg");
+                sg.segments = new Segments(sg, sg.model, "#clipsvg");
+                sg.selection = new Selection(sg, "#clipsvg");
+                sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
+            } });
 
             sg.$el.fadeIn("fast");
             window.scrollTo(0, 0);
@@ -218,9 +221,10 @@ var Languishes = Backbone.Router.extend({
     // Handle the "#clips/12345" fragment rendering:
     hashclips: function (id, range) {
         this._currentclip = id;
+        var clip = this._cliplist.get(id);
 
         if (this._clipview) this._clipview.destroy();
-        this._clipview = new ClipView({ id: id });
+        this._clipview = new ClipView({ "id": id, "model": clip });
 
         this.$el.empty();
         this.$el.append(this._clipview.render(true).el);
