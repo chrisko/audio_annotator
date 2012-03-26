@@ -55,14 +55,14 @@ body {
 #waveform {
     fill: none;
     stroke: #000;
-    stroke-width: 2;
+    stroke-width: 1;
     /*shape-rendering: crispEdges;*/
 
     visibility:visible;
     z-index:15;
-    /* opacity:0.15;
-    -moz-opacity:0.15;
-    filter:alpha(opacity=15); */
+    opacity:0.40;
+    -moz-opacity:0.40;
+    filter:alpha(opacity=40);
 }
 
 #selection {
@@ -90,4 +90,14 @@ body {
     font-family: Verdana;
     font-size: 12;
     z-index:26;
+
+    /* Dragging, unfortunately, causes this SVG text to be selected, which
+     * looks pretty unsightly. This solution disables user text selection.
+     * Via http://stackoverflow.com/q/826782. */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
