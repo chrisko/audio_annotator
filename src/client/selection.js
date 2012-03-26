@@ -13,6 +13,7 @@ function Selection(delegate, svg_id) {
 
     // When we're finally bound to the DOM, complete our initialization:
     this.delegate.on("view:bound_to_dom", this.bind_to_dom, this);
+    this.delegate.on("window:resize", this.resize, this);
 }
 
 Selection.prototype.bind_to_dom = function () {
@@ -56,6 +57,13 @@ Selection.prototype.height = function () {
 
 Selection.prototype.width = function () {
     return $(this.svg_id).width();
+};
+
+Selection.prototype.resize = function () {
+    if (this.svg) {
+        this.svg.select("#selection").remove();
+        this.redraw();
+    }
 };
 
 Selection.prototype.destroy = function () {

@@ -22,6 +22,7 @@ function Waveform(delegate, svg_id, clip_audio) {
     // Subscribe to all the events we're curious in:
     this.delegate.on("audio:loaded", this.render, this);
     this.delegate.on("view:bound_to_dom", this.render, this);
+    this.delegate.on("window:resize", this.resize, this);
 }
 
 Waveform.prototype.height = function () {
@@ -30,6 +31,13 @@ Waveform.prototype.height = function () {
 
 Waveform.prototype.width = function () {
     return $(this.svg_id).width();
+};
+
+Waveform.prototype.resize = function () {
+    if (this.svg) {
+        this.svg.select("#waveform").remove();
+        this.render();
+    }
 };
 
 Waveform.prototype.render = function () {

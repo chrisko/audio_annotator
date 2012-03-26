@@ -162,6 +162,7 @@ var ClipView = Backbone.View.extend({
     },
 
     handle_resize: function (e) {
+        this.trigger("window:resize");
         if (this.waveform) {
             this.waveform.destroy();
             this.waveform.render();

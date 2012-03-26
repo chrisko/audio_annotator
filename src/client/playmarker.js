@@ -12,10 +12,12 @@ function Playmarker(delegate, svg_id) {
     this.delegate.on("audio:done_playing", this.pause, this);
     this.delegate.on("selection:finalized", this.pause, this);
     this.delegate.on("view:bound_to_dom", this.find_svg, this);
+    this.delegate.on("window:resize", this.resize, this);
 }
 
 Playmarker.prototype.destroy = function () {
-    // Should be taken care of.
+    if (!this.svg) return;
+    this.svg.select("#playmarker").remove();
 };
 
 Playmarker.prototype.find_svg = function () {
@@ -30,6 +32,12 @@ Playmarker.prototype.height = function () {
 
 Playmarker.prototype.width = function () {
     return $(this.svg_id).width();
+};
+
+Playmarker.prototype.resize = function () {
+    if (this.svg.select("#playmarker").empty()) return;
+    this.svg.select("#playmarker")
+        .attr("y2", this.height());
 };
 
 Playmarker.prototype.update = function (pos, dur) {
@@ -80,9 +88,4 @@ Playmarker.prototype.pause = function (where) {
         .ease("linear")
         .attr("x1", xpos)
         .attr("x2", xpos);
-};
-
-Playmarker.prototype.reset = function () {
-    if (!this.svg) return;
-    this.svg.select("#playmarker").remove();
 };
