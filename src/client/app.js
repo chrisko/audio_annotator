@@ -7,7 +7,7 @@ var Clip = Backbone.Model.extend({
 });
 
 var ClipList = Backbone.Collection.extend({
-    url: "/clips",
+    url: "/clips/all",
     model: Clip,
     comparator: function (clip) {
         return clip.get("id");
@@ -136,13 +136,11 @@ var ClipView = Backbone.View.extend({
             var contents = _.template(sg.template, { id: sg.id });
             sg.$el.append(contents);
 
-            sg.model.fetch({ success: function () {
-                sg.audio = new ClipAudio(sg, sg.id);
-                sg.playmarker = new Playmarker(sg, "#clipsvg");
-                sg.segments = new Segments(sg, sg.model, "#clipsvg");
-                sg.selection = new Selection(sg, "#clipsvg");
-                sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
-            } });
+            sg.audio = new ClipAudio(sg, sg.id);
+            sg.playmarker = new Playmarker(sg, "#clipsvg");
+            sg.segments = new Segments(sg, sg.model, "#clipsvg");
+            sg.selection = new Selection(sg, "#clipsvg");
+            sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
 
             sg.$el.fadeIn("fast");
             window.scrollTo(0, 0);
@@ -202,6 +200,7 @@ var Languishes = Backbone.Router.extend({
         this._cliplist.fetch({
             success: function (collection, response) {
                 ls._cliplist = collection;
+                console.log(collection);
 
                 if (!ls._cliplistview)
                     ls._cliplistview = new ClipListView({ model: ls._cliplist });

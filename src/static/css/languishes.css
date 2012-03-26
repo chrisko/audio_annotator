@@ -77,3 +77,17 @@ body {
     stroke-width: 2;
     z-index:25;
 }
+
+.segment {
+    fill: #222;
+    stroke: #777;
+    stroke-width: 2;
+    z-index:25;
+}
+
+.label {
+    fill: white;
+    font-family: Verdana;
+    font-size: 8;
+    z-index:26;
+}

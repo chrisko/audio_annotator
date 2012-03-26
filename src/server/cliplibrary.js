@@ -188,18 +188,12 @@ ClipLibrary.prototype.add_segment = function (clip_id, segment) {
 };
 
 ClipLibrary.prototype.add_xlabel_segments_for_clip = function (clip_id, layer, xlabel) {
-    var current = 0;
     for (i in xlabel.data) {
         var this_segment = xlabel.data[i];
-        // The same duration may have multiple different labels:
-        for (j in this_segment[1]) {
-            this.add_segment(clip_id, { "layer": layer,
-                                        "label": this_segment[1][j],
-                                        "start": current,
-                                        "end": current + parseFloat(this_segment[0]) });
-        }
-
-        current += parseFloat(this_segment[0]);
+        this.add_segment(clip_id, { "layer": layer,
+                                    "label": this_segment.label,
+                                    "start": parseFloat(this_segment.start),
+                                    "end": parseFloat(this_segment.end) });
     }
 };
 
@@ -212,7 +206,14 @@ ClipLibrary.prototype.get_all_clips = function (cb) {
         }
 
         multi.exec(function (err, replies) {
-            cb(replies);
+            var output = [ ];
+            for (i in replies) {
+                // Exclude the filename key. A bit too private.
+                delete replies[i].filename;
+                output.push(replies[i]);
+            }
+
+            cb(output);
         });
     });
 };

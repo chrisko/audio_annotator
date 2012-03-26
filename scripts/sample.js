@@ -55,10 +55,15 @@ function splice_file(filename, audio_info, cb) {
     var cmd = "sox \"" + filename + "\" \"" + output_file + "\""
             + " trim " + start + "s " + duration + "s";
 
+    // Calculate the range in terms of seconds, not samples:
+    var sample_duration = 1.0 / audio_info["Sample Rate"];
+    var range = [ sample_duration * start,
+                  sample_duration * (start + duration) ];
+
     console.log(cmd);
     exec(cmd, function (error, stdout, stderr) {
         if (error) { cb(stderr, null); }
-        cb(null, output_file, [ start, start + duration ]);
+        cb(null, output_file, range);
     });
 }
 
@@ -128,11 +133,6 @@ async.waterfall([
         async.forEachSeries(audio_info, function (item, foreach_cb) {
             var filename = item["Input File"].replace(/'/g, "");
 
-            // Convert the Clip Range from samples to seconds:
-            var sample_range = item["Clip Range"];
-            var num_samples = sample_range[1] - sample_range[0];
-            var duration_in_s = item["Sample Rate"] * num_samples;
-
             ClipLibrary.prototype.checksum(item["Clip File"], function (err, digest) {
                 console.log("Checksum of " + item["Clip File"] + ": " + digest);
                 var clip_id = ClipLibrary.prototype.checksum_to_id(digest);
@@ -151,6 +151,7 @@ async.waterfall([
                 );
 
                 // And another for the .phones file:
+                /*
                 var phonesfile = filename.replace(/\.wav$/, ".phones");
                 multi.lpush("work_queue",
                     JSON.stringify({ op: "import segments",
@@ -160,6 +161,7 @@ async.waterfall([
                                      layer: "phones",
                                      pri: "low" })
                 );
+                */
 
                 multi.exec(function (err, replies) {
                     foreach_cb();

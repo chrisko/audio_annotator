@@ -108,23 +108,27 @@ Segments.prototype.render = function (range) {
     if (!this.loaded || !this.svg) return;
 
     // First, select the segments that are visible:
-    console.log("rendering segments...");
     var i; for (i = 0; i < this.collection.length; i++) {
         var this_segment = this.collection.at(i);
-        console.log("appending segment " + this_segment.get("start")
-                                   + "-" + this_segment.get("end"));
 
-        console.log("transformed: " + this_segment.get("start") / this.clip.start,
-                                    + "-" + this_segment.get("end") / this.clip.end);
-        console.log(this.clip);
+        var tstart = parseFloat(this_segment.get("start")) / parseFloat(this.clip.get("duration"));
+        var tend = parseFloat(this_segment.get("end")) / parseFloat(this.clip.get("duration"));
 
-        /*
-        this.svg.append("line")
+        if (tstart < 0) tstart = 0;
+        if (tend > 1) tend = 1;
+
+        var group = this.svg.append("g");
+        group.append("rect")
             .attr("class", "segment")
-            .attr("x1", this_segment.begin / 5)
-            .attr("y1", 0.15 * this.height())
-            .attr("x1", this_segment.end / 5)
-            .attr("y1", 0.10 * this.height());
-        */
+            .attr("x", tstart * this.width())
+            .attr("y", 0)  // Top.
+            .attr("width", (tend - tstart) * this.width())
+            .attr("height", 0.10 * this.height());
+        group.append("text")
+            .attr("class", "label")
+            .attr("x", (tstart + 0.5 * (tend - tstart)) * this.width())
+            .attr("y", 12)
+            .attr("text-anchor", "middle")
+            .text(this_segment.get("label").split(/[;,]/)[0]);
     }
 };

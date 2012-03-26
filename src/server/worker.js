@@ -8,7 +8,6 @@ var async = require("async"),
 
 var xlabel = require("./xlabel.js");
 
-////////////////////////////////////////////////////////////////////////////////
 function Worker(clip_library) {
     if (!clip_library)
         throw new Error("ClipLibrary instance required.");
@@ -19,7 +18,6 @@ function Worker(clip_library) {
     this.process_task();
 }
 
-////////////////////////////////////////////////////////////////////////////////
 Worker.prototype.operations = {
     "verify checksum": function (task, cb) {
         if (!task.target) {
@@ -80,7 +78,6 @@ Worker.prototype.operations = {
     }
 };
 
-////////////////////////////////////////////////////////////////////////////////
 Worker.prototype.process_task = function () {
     var wrkr = this;
     var db = this.redis;
@@ -114,5 +111,4 @@ Worker.prototype.process_task = function () {
     });
 };
 
-////////////////////////////////////////////////////////////////////////////////
 module.exports = Worker;
