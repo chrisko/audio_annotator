@@ -53,15 +53,15 @@ exports.parse_xlabel = function (lines) {
             var matches = lines[line].match(/^\s*([\d\-\.]+)\s+(\d+)\s*(.*)\s*$/);
             if (!matches) throw "No matches for line " + lines[line];
 
-            // If we added a previous segment, mark its ending before anything:
-            if (data.length) data[data.length - 1].end = matches[1];
+            // If we added a previous segment, mark its ending and label text:
+            if (data.length) {
+                data[data.length - 1].end = matches[1];
+                data[data.length - 1].label = matches[3].split(SEPARATOR);
+            }
 
-            // Now add the new segment, with an as-yet-undefined "end" key:
-            data.push({
-                start: matches[1],
-             // color: matches[2],  // This is so useless and dumb. Really.
-                label: matches[3].split(SEPARATOR)
-            });
+            // Now add the new segment, with as-yet-undefined "end" and "label"
+            // keys. The beginning's the only useful thing we acquire here.
+            data.push({ start: matches[1] });
         }
     }
 
@@ -93,6 +93,7 @@ exports.remap_to_range = function (xlabel, range) {
                 end: segment.end - range[0],
                 label: segment.label
             });
+            //console.log(included[included.length - 1]);
         }
     }
 

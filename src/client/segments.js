@@ -117,18 +117,42 @@ Segments.prototype.render = function (range) {
         if (tstart < 0) tstart = 0;
         if (tend > 1) tend = 1;
 
+        // Put the segment rectangle and the label text in the same SVG group.
         var group = this.svg.append("g");
-        group.append("rect")
+        // The segment rectangle has to come before the text, since it's underneath:
+        var rect = group.append("rect")
             .attr("class", "segment")
-            .attr("x", tstart * this.width())
+            .attr("x", Math.round(tstart * this.width()))
             .attr("y", 0)  // Top.
-            .attr("width", (tend - tstart) * this.width())
-            .attr("height", 0.10 * this.height());
-        group.append("text")
+            .attr("width", Math.round((tend - tstart) * this.width()))
+            .attr("height", 20);
+        // Then, on top of the rectangle comes the label text:
+        var text = group.append("text")
             .attr("class", "label")
-            .attr("x", (tstart + 0.5 * (tend - tstart)) * this.width())
-            .attr("y", 12)
             .attr("text-anchor", "middle")
             .text(this_segment.get("label").split(/[;,]/)[0]);
+
+        // Calculate text x- and y-coordinates, remembering "text-anchor: middle" above:
+        var text_x = parseFloat(rect.attr("x")) + 0.5 * parseFloat(rect.attr("width")),
+            text_y = parseFloat(rect.attr("y")) + 0.5 * parseFloat(rect.attr("height"));
+        // And update the text node's CSS properties accordingly:
+        text.attr("x", Math.round(text_x))
+            .attr("y", Math.round(text_y))
+            .attr("dy", ".35em");  // Simulates "vertical-align: middle".
+
+        // Get the width of the bounding box around the text and compare it to
+        // the segment's rectangle width, to see if we need to scale the text:
+        var rect_to_text_width = rect.attr("width") / text.node().getBBox().width;
+        if (rect_to_text_width < 1) {
+            console.log(this_segment.get("label").split(/[,.]/)[0] + ": " + rect_to_text_width);
+            // A simple SVG scale() would actually transform the coordinates
+            // as well. We need to translate first, and then scale:
+            text.attr("transform", "translate(" + (-1 * parseFloat(text.attr("x")) * (rect_to_text_width - 1)) + ", 0) "
+                                 + "scale(" + rect_to_text_width + ", 1)");
+
+            //text.attr("transform", "translate(-" + Math.round(parseFloat(text.attr("x")) * (rect_to_text_width - 1))
+            //                             + ", -" + Math.round(parseFloat(text.attr("y")) * (rect_to_text_width - 1)) + ") "
+            //                     + "scale(" + rect_to_text_width + ")");
+        }
     }
 };
