@@ -7,7 +7,7 @@ var Clip = Backbone.Model.extend({
 });
 
 var ClipList = Backbone.Collection.extend({
-    url: "/clips/all",
+    url: "/clips",
     model: Clip,
     comparator: function (clip) {
         return clip.get("id");
@@ -190,17 +190,18 @@ var Languishes = Backbone.Router.extend({
         "clips/:id/:range": "hashclips"
     },
 
-    // Handle the "no fragment" (or I guess empty fragment) page rendering.
-    index: function () {
+    initialize: function () {
         this._currentclip = null;
         if (!this._cliplist)
             this._cliplist = new ClipList;
+    },
 
+    // Handle the "no fragment" (or I guess empty fragment) page rendering.
+    index: function () {
         var ls = this;
         this._cliplist.fetch({
             success: function (collection, response) {
                 ls._cliplist = collection;
-                console.log(collection);
 
                 if (!ls._cliplistview)
                     ls._cliplistview = new ClipListView({ model: ls._cliplist });
@@ -220,13 +221,18 @@ var Languishes = Backbone.Router.extend({
     // Handle the "#clips/12345" fragment rendering:
     hashclips: function (id, range) {
         this._currentclip = id;
-        var clip = this._cliplist.get(id);
+        var clip = new Clip({ id: id });
 
-        if (this._clipview) this._clipview.destroy();
-        this._clipview = new ClipView({ "id": id, "model": clip });
+        var ls = this;
+        clip.fetch({
+            success: function (model) {
+                if (ls._clipview) ls._clipview.destroy();
+                ls._clipview = new ClipView({ "id": id, "model": clip });
 
-        this.$el.empty();
-        this.$el.append(this._clipview.render(true).el);
-        this._clipview.trigger("view:bound_to_dom");
+                ls.$el.empty();
+                ls.$el.append(ls._clipview.render(true).el);
+                ls._clipview.trigger("view:bound_to_dom");
+            }
+        });
     }
 });

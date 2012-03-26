@@ -199,7 +199,7 @@ ClipLibrary.prototype.add_xlabel_segments_for_clip = function (clip_id, layer, x
 
 ClipLibrary.prototype.get_all_clips = function (cb) {
     var cl = this;
-    this.get_all_clip_ids(function (ids) {
+    this.redis.smembers("clips", function (err, ids) {
         var multi = cl.redis.multi();
         for (i in ids) {
             multi.hgetall("clip:" + ids[i]);
@@ -215,12 +215,6 @@ ClipLibrary.prototype.get_all_clips = function (cb) {
 
             cb(output);
         });
-    });
-};
-
-ClipLibrary.prototype.get_all_clip_ids = function (cb) {
-    this.redis.smembers("clips", function (err, clip_ids) {
-        cb(clip_ids);
     });
 };
 

@@ -30,7 +30,7 @@ function Segments(delegate, clip, svg_id) {
 
     this.collection = new SegmentList({ clip_id: this.clip.id });
     this.collection.clip_id = this.clip.id;
-    this.collection.url = "/clips/" + this.clip.id + "/segments/all";
+    this.collection.url = "/clips/" + this.clip.id + "/segments";
 
     var s = this;
     this.collection.fetch({

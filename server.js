@@ -86,12 +86,6 @@ languishes.get("/clips", function (req, res) {
     });
 });
 
-languishes.get("/clips/all", function (req, res) {
-    languishes.clip_library.get_all_clips(function (ids) {
-        res.json(ids);
-    });
-});
-
 languishes.get("/record", function (req, res) {
     res.render("record.html", { });
 });
@@ -185,13 +179,7 @@ languishes.get("/clips/:id/spectrogram", function (req, res) {
     });
 });
 
-languishes.get("/clips/all", function (req, res) {
-    languishes.clip_library.get_all_clips(function (all_clips) {
-        res.json(all_clips);
-    });
-});
-
-languishes.get("/clips/:id/segments/all", function (req, res) {
+languishes.get("/clips/:id/segments", function (req, res) {
     var clip_id = req.params.id;
     languishes.clip_library.get_clip_segments(clip_id, function (segments) {
         var multi = redis.multi();
@@ -205,14 +193,7 @@ languishes.get("/clips/:id/segments/all", function (req, res) {
     });
 });
 
-languishes.get("/clips/:id/segments", function (req, res) {
-    var clip_id = req.params.id;
-    languishes.clip_library.get_clip_segments(clip_id, function (segments) {
-        res.json(segments);
-    });
-});
-
-languishes.get("/clips/:clipid/segment/:segmentid", function (req, res) {
+languishes.get("/clips/:clipid/segments/:segmentid", function (req, res) {
     var clip_id = req.params.clipid, segment_id = req.params.segmentid;
     languishes.clip_library.get_segment(clip_id, segment_id, function (segment) {
         res.json(segment);
