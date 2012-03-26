@@ -91,8 +91,12 @@ ClipAudio.prototype.toggle_audio = function () {
                 this.delegate.trigger("audio:paused", this.position / this.duration);
         },
         onfinish: function () {
-            console.log("done playing!");
-            ca.delegate.trigger("audio:done_playing");
+            // Return the cursor to the beginning of where we started to play:
+            ca.delegate.trigger("audio:done_playing", (this.from || 0) / this.duration);
+        },
+        onstop: function () {
+            // As above, return the cursor to its starting position.
+            ca.delegate.trigger("audio:done_playing", (this.from || 0) / this.duration);
         }
     });
 };

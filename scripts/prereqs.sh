@@ -22,7 +22,7 @@ fi
 if [[ ! -f soundmanager2.js || ! -f soundmanager2.swf || ! -f soundmanager2_debug.swf ]]; then
     echo "Fetching soundmanager2 files..."
     SOUNDMANAGER_URL=https://raw.github.com/scottschiller/SoundManager2
-    SOUNDMANAGER_SHA1=2fd8965579ce2ae6dfad1f56fd2088f4d9e58dd4
+    SOUNDMANAGER_SHA1=ba28eeaeb33bfa861dcb69383d8d14be91b68395
     $CURLCMD $SOUNDMANAGER_URL/$SOUNDMANAGER_SHA1/script/soundmanager2.js > soundmanager2.js
     $CURLCMD $SOUNDMANAGER_URL/$SOUNDMANAGER_SHA1/script/soundmanager2-nodebug-jsmin.js > soundmanager2-nodebug-jsmin.js
     $CURLCMD $SOUNDMANAGER_URL/$SOUNDMANAGER_SHA1/swf/soundmanager2.swf > soundmanager2.swf

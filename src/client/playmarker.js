@@ -9,7 +9,7 @@ function Playmarker(delegate, svg_id) {
 
     this.delegate.on("audio:playing", this.update, this);
     this.delegate.on("audio:paused", this.pause, this);
-    this.delegate.on("audio:done_playing", this.reset, this);
+    this.delegate.on("audio:done_playing", this.pause, this);
     this.delegate.on("selection:finalized", this.pause, this);
     this.delegate.on("view:bound_to_dom", this.find_svg, this);
 }
