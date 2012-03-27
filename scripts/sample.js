@@ -62,7 +62,7 @@ function splice_file(filename, audio_info, cb) {
 
     console.log(cmd);
     exec(cmd, function (error, stdout, stderr) {
-        if (error) { cb(stderr, null); }
+        if (error) { cb(stderr, null, null); }
         cb(null, output_file, range);
     });
 }
@@ -162,7 +162,7 @@ async.waterfall([
                 */
 
                 multi.exec(function (err, replies) {
-                    foreach_cb();
+                    foreach_cb(err);
                 });
             });
         },
@@ -170,5 +170,8 @@ async.waterfall([
         function (err) {
             cb(err);
         });
+    }],
+    function (err) {
+        process.exit(0);
     }
-]);
+);
