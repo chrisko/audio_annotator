@@ -247,6 +247,6 @@ languishes.post("/upload", function (req, res) {
 languishes.clip_library = new ClipLibrary(config.data_dir, redis);
 languishes.worker = new Worker(languishes.clip_library);
 
-languishes.listen(process.env.npm_package_config_port);
+languishes.listen(config.port);
 console.log("Express server listening on port %d in %s mode",
             languishes.address().port, languishes.settings.env);

@@ -13,6 +13,7 @@
         "async": ">= 0.1.16",
         "ctype": ">= 0.4.0",
         "express": ">= 2.5.0",
+        "forever": ">= 0.8.4",
         "formidable": ">= 1.0.0",
         "redis": ">= 0.7.0",
         "socket.io": ">= 0.8.0",
@@ -24,6 +25,9 @@
     },
 
     "scripts": {
+        "start": "forever start server.js",
+        "stop": "forever stop server.js",
+
         "postinstall": "./scripts/install.sh",
         "prestart": "./scripts/install.sh"
     }
