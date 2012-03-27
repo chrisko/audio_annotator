@@ -19,33 +19,11 @@ var ClipNameView = Backbone.View.extend({
     tagName: "li",
 
     // view-source:http://documentcloud.github.com/backbone/examples/todos/index.html
-    template: "<div class=\"clipname\">"
-              + "<div class=\"clipdisplay\">"
-                + "<div class=\"clipname\"></div>"
-                + "<span class=\"clipduration\"></div>"
-                + "<span class=\"clipadded\"></div>"
-              + "</div>"
-              + "<div class=\"clipedit\">"
-                + "<input class=\"clipinput\" type=\"text\" value=\"\" />"
-              + "</div>"
-            + "</div>"
+    template: _.template($('#clip-template').html())
 });
 
 var ClipListView = Backbone.View.extend({
-    template: "<ul id=\"cliplist\" class=\"playlist dark\">"
-            + "<% _.each(clips, function (clip) { %>"
-              + "<li>"
-                + "<div class=\"clipdisplay\">"
-                  + "<a class=\"cliplink\" href=\"#clips/<%= clip.id %>\">"
-                    + "<i class=\"icon-headphones icon-large\"></i>"
-                    + "<%= clip.get(\"name\") || clip.id %>"
-                  + "</a>"
-                + "</div>"
-                + "<div class=\"clipedit\">"
-                  + "<input class=\"clipinput\" type=\"text\" value=\"\" />"
-                + "</div>"
-              + "</li>"
-            + "<% }); %>",
+    template: _.template($('#cliplist-template').html()),
 
     events: {
         "dblclick div.cliplink": "edit",
@@ -61,7 +39,7 @@ var ClipListView = Backbone.View.extend({
         var clv = this;
         this.$el.fadeOut("fast", function () {
             var clip_array = clv.model.toArray();
-            var contents = _.template(clv.template, { clips: clip_array });
+            var contents = clv.template({ clips: clip_array });
             clv.$el.html(contents);
             clv.$el.fadeIn("fast");
         });
@@ -102,12 +80,7 @@ var ClipView = Backbone.View.extend({
         "mouseleave #clipvis": function () { this.$el.css("cursor", "auto"); }
     },
 
-    template: "<center>"
-              + "<div id=\"clipvis\">"
-                + "<img id=\"spectrogram\" src=\"clips/<%= id %>/spectrogram\">"
-                + "<svg id=\"clipsvg\"></svg>"
-              + "</div>"
-            + "</center>",
+    template: _.template($('#clipview-template').html()),
 
     initialize: function () {
         // Make sure these event handlers are always called with this ClipView.
@@ -134,7 +107,7 @@ var ClipView = Backbone.View.extend({
     render: function () {
         var sg = this;
         this.$el.fadeOut("fast", function () {
-            var contents = _.template(sg.template, { id: sg.id });
+            var contents = sg.template({ id: sg.id });
             sg.$el.append(contents);
 
             sg.audio = new ClipAudio(sg, sg.id);

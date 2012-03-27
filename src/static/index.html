@@ -48,5 +48,47 @@
                 });
             });
         </script>
+
+        <!-- Templates -->
+        <script type="text/template" id="clip-template">
+            <div class="clipname">
+                <div class="clipdisplay">
+                    <div class="clipname"></div>
+                    <span class="clipduration"></div>
+                    <span class="clipadded"></div>
+                </div>
+                <div class="clipedit">
+                    <input class="clipinput" type="text" value=""></input>
+                </div>
+            </div>
+        </script>
+
+        <script type="text/template" id="cliplist-template">
+            <ul id="cliplist" class="playlist dark">
+                <% _.each(clips, function (clip) { %>
+                <li>
+                    <div class="clipdisplay">
+                        <a class="cliplink" href="#clips/<%= clip.id %>">
+                            <i class="icon-headphones"></i>
+                            <%= clip.get("name") || clip.id %>
+                        </a>
+                    </div>
+                    <div class="clipedit">
+                        <input class="clipinput" type="text" value=""></input>
+                    </div>
+                </li>
+                <% }); %>
+            </ul>
+        </script>
+
+        <script type="text/template" id="clipview-template">
+            <center>
+                <div id="clipvis">
+                    <svg id="clipsvg"></svg>
+                    <img id="spectrogram" src="clips/<%= id %>/spectrogram"></img>
+                </div>
+            </center>
+        </script>
+
     </body>
 </html>

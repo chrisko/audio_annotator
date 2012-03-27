@@ -80,14 +80,14 @@ body {
     z-index:25;
 }
 
-.segment {
+#clipvis .segment {
     fill: #DDD;
     stroke: #777;
     stroke-width: 2;
     z-index:25;
 }
 
-.label {
+#clipvis .label {
     fill: black;
     font-family: "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
     font-size: 12;
@@ -103,3 +103,18 @@ body {
     -ms-user-select: none;
     user-select: none;
 }
+
+/* Clip List View
+#clipvis .clipdisplay
+#todo-list li.editing {
+    padding: 0;
+    border-bottom: 0;
+}
+#todo-list .editing .display,
+#todo-list .edit {
+    display: none;
+}
+#todo-list .editing .edit {
+    display: block;
+}
+*/
