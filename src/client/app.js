@@ -14,56 +14,71 @@ var ClipList = Backbone.Collection.extend({
     }
 });
 
-var ClipNameView = Backbone.View.extend({
+var ClipItemView = Backbone.View.extend({
     // To be rendered as an element in a <ul> list:
     tagName: "li",
 
     // view-source:http://documentcloud.github.com/backbone/examples/todos/index.html
-    template: _.template($('#clip-template').html())
+    template: _.template($('#clipitem-template').html()),
+
+    initialize: function () {
+        _.bindAll(this, "render", "close", "remove");
+        this.model.bind("change", this.render);
+        this.model.bind("destroy", this.remove);
+    },
+
+    render: function () {
+        this.$el.html(this.template({ clip: this.model }));
+        this.input = this.$(".clipinput");
+        return this;
+    },
+
+    events: {
+        "dblclick label.clipname": "edit",
+        "keypress .clipinput": "update_on_enter",
+        "blur .clipinput": "close"
+    },
+
+    edit: function () {
+        // Change the element's class so our CSS can re-style it:
+        this.$el.addClass("editing");
+        // And select the input field, now that it's visible:
+        this.input.focus();
+    },
+
+    update_on_enter: function (e) {
+        if (e.keyCode == 13) this.close();
+    },
+
+    close: function () {
+        // Save the new clip name to the backend:
+        this.model.save({ name: this.input.val() });
+        // And instruct our CSS to remove the input box:
+        this.$el.removeClass("editing");
+    }
 });
 
 var ClipListView = Backbone.View.extend({
     template: _.template($('#cliplist-template').html()),
 
-    events: {
-        "dblclick div.cliplink": "edit",
-        "keypress .clipinput": "update_on_enter"
-    },
-
     initialize: function () {
-        this.model.bind("reset", this.addAll, this);
-        //this.model.bind("all", this.render, this);
+        this.$el.html(this.template({ }));
+        this.collection = new ClipList();
+
+        _.bindAll(this, "add_all", "add_one");
+        this.collection.bind("add", this.add_one);
+        this.collection.bind("reset", this.add_all);
+
+        this.collection.fetch();
     },
 
-    render: function () {
-        var clv = this;
-        this.$el.fadeOut("fast", function () {
-            var clip_array = clv.model.toArray();
-            var contents = clv.template({ clips: clip_array });
-            clv.$el.html(contents);
-            clv.$el.fadeIn("fast");
-        });
-
-        return this;
+    add_all: function () {
+        this.collection.each(this.add_one);
     },
 
-    addAll: function () {
-    },
-
-    edit: function () {
-        console.log("edit!");
-        // Change the element's class so our CSS can re-style it:
-        this.$el.addClass("editing");
-        this.$(".clipinput").focus();
-    },
-
-    update_on_enter: function (e) {
-        if (e.keyCode != 13) return;
-        console.log("update!");
-        //var text = this.input.val();
-        //if (!text || e.keyCode != 13) return;
-        //Todos.create({text: text});
-        //this.input.val("");
+    add_one: function (clip) {
+        var view = new ClipItemView({ model: clip });
+        this.$("#cliplist").append(view.render().el);
     }
 });
 
@@ -84,43 +99,30 @@ var ClipView = Backbone.View.extend({
 
     initialize: function () {
         // Make sure these event handlers are always called with this ClipView.
-        _.bindAll(this, "handle_keydown");
-        _.bindAll(this, "handle_resize");
+        _.bindAll(this, "handle_keydown", "handle_resize");
         // And bind to the keydown and resize events. Unbound in destroy().
         $(document).bind("keydown", this.handle_keydown);
         $(window).bind("resize", this.handle_resize);
     },
 
+    render: function () {
+        this.$el.html(this.template({ id: this.model.id }));
+
+        this.audio = new ClipAudio(this, this.model.id);
+        this.playmarker = new Playmarker(this, "#clipsvg");
+        this.segments = new Segments(this, this.model, "#clipsvg");
+        this.selection = new Selection(this, "#clipsvg");
+        this.waveform = new Waveform(this, "#clipsvg", this.audio);
+
+        return this;
+    },
+
     destroy: function () {
-        // Remove this View instance from the DOM:
-        this.remove();
-        // And remember to unbind the global events we subscribed to above:
-        $(document).unbind("keydown", this.handle_keydown);
-        $(window).unbind("resize", this.handle_resize);
-        // And finally, get rid of all our audio data:
+        // Explicitly get rid of all our audio data:
         if (this.audio) this.audio.destroy();
         if (this.playmarker) this.playmarker.destroy();
         if (this.selection) this.selection.destroy();
         if (this.waveform) this.waveform.destroy();
-    },
-
-    render: function () {
-        var sg = this;
-        this.$el.fadeOut("fast", function () {
-            var contents = sg.template({ id: sg.id });
-            sg.$el.append(contents);
-
-            sg.audio = new ClipAudio(sg, sg.id);
-            sg.playmarker = new Playmarker(sg, "#clipsvg");
-            sg.segments = new Segments(sg, sg.model, "#clipsvg");
-            sg.selection = new Selection(sg, "#clipsvg");
-            sg.waveform = new Waveform(sg, "#clipsvg", sg.audio);
-
-            sg.$el.fadeIn("fast");
-            window.scrollTo(0, 0);
-        });
-
-        return this;
     },
 
     handle_keydown: function (e) {
@@ -149,14 +151,51 @@ var ClipView = Backbone.View.extend({
     }
 });
 
+// The ViewTransition() object below uses View.close(), which we'll define
+// here as "remove the View from the DOM, and unbind all bound events".
+Backbone.View.prototype.close = function () {
+    if (this.destroy) {
+        this.destroy();
+    }
+
+    this.remove();
+    this.unbind();
+}
+
+// http://lostechies.com/derickbailey/2011/09/15/zombies-run-managing-page-transitions-in-backbone-apps
+function ViewTransition() {
+    this.el = "#main";
+    this.$el = $(this.el);
+
+    this.showView = function (view) {
+        if (this.currentView) {
+            var vt = this;
+            this.$el.fadeOut("fast", function () {
+                vt.currentView.close();
+                vt.currentView = view;
+
+                // For more on this pattern, see
+                // https://github.com/documentcloud/backbone/issues/957
+                vt.currentView.render();
+                vt.$el.html(vt.currentView.el);
+
+                // Some things (like D3 selections) won't work until the view
+                // is actually bound to the DOM. Trigger those events now.
+                vt.currentView.trigger("view:bound_to_dom");
+
+                vt.$el.fadeIn("fast");
+                window.scrollTo(0, 0);
+            });
+        } else {
+            this.currentView = view;
+            this.currentView.render();
+            this.$el.html(this.currentView.el);
+            this.currentView.trigger("view:bound_to_dom");
+        }
+    };
+}
+
 var Languishes = Backbone.Router.extend({
-    el: "#main",
-    $el: $("#main"),
-
-    _cliplist: null,  // The list of all clips, returned by the server.
-    _currentclip: null,  // If a specific clip is selected, it's kept here.
-    _segmentlist: null,  // The current clip's segments, if any.
-
     // Maps URL fragments to functions below, to handle link rendering.
     routes: {
         "": "index",
@@ -166,47 +205,24 @@ var Languishes = Backbone.Router.extend({
     },
 
     initialize: function () {
-        this._currentclip = null;
-        if (!this._cliplist)
-            this._cliplist = new ClipList;
+        this.view_transition = new ViewTransition();
     },
 
     // Handle the "no fragment" (or I guess empty fragment) page rendering.
     index: function () {
-        var ls = this;
-        this._cliplist.fetch({
-            success: function (collection, response) {
-                ls._cliplist = collection;
-
-                if (!ls._cliplistview)
-                    ls._cliplistview = new ClipListView({ model: ls._cliplist });
-
-                // For more on this pattern, see
-                // https://github.com/documentcloud/backbone/issues/957
-                ls.$el.empty();
-                ls.$el.append(ls._cliplistview.render(true).el);
-
-                // Some things (like D3 selections) won't work until the view
-                // is actually bound to the DOM. Trigger those events now.
-                ls._cliplistview.trigger("view:bound_to_dom");
-            }
-        });
+        var cliplistview = new ClipListView();
+        this.view_transition.showView(cliplistview);
     },
 
     // Handle the "#clips/12345" fragment rendering:
     hashclips: function (id, range) {
-        this._currentclip = id;
         var clip = new Clip({ id: id });
 
         var ls = this;
         clip.fetch({
-            success: function (model) {
-                if (ls._clipview) ls._clipview.destroy();
-                ls._clipview = new ClipView({ "id": id, "model": clip });
-
-                ls.$el.empty();
-                ls.$el.append(ls._clipview.render(true).el);
-                ls._clipview.trigger("view:bound_to_dom");
+            success: function () {
+                var clipview = new ClipView({ "model": clip });
+                ls.view_transition.showView(clipview);
             }
         });
     }

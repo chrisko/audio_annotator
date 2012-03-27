@@ -9,7 +9,8 @@ var crypto = require("crypto"),
     fs = require("fs"),
     formidable = require("formidable"),
     path = require("path"),
-    util = require("util");
+    util = require("util"),
+    validator = require("validator");
 
 var ClipLibrary = require("./src/server/cliplibrary.js"),
     Worker = require("./src/server/worker.js"),
@@ -58,7 +59,7 @@ languishes.configure(function() {
     // form, or JSON data) and store the parameters is req.body.
     languishes.use(express.bodyParser());
 
-    //languishes.use(express.logger({ format: ":method :url" }));
+    languishes.use(express.logger({ format: ":method :url" }));
     languishes.use(express.static(config.static_dir));
 });
 
@@ -153,6 +154,29 @@ languishes.get("/clips/:id", function (req, res) {
 
             res.json(wav_representation);
         });
+});
+
+languishes.put("/clips/:id", function (req, res) {
+    try {
+        var name = req.body.name;
+        var clean_name = validator.sanitize(name).xss();
+        validator.check(req.body.id).is(/^[0-9a-f]{4,12}$/);
+
+        var client = redis;
+        redis.exists("clip:" + req.body.id, function (err, exists) {
+            if (err) throw new Error(err);
+            if (!exists) throw new Error("Clip " + req.body.id + " does not exist");
+            client.hset("clip:" + req.body.id, "name", clean_name, function (err, response) {
+                if (err) throw new Error(err);
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end(req.body.id + " name changed to \"" + clean_name + "\"");
+            });
+        });
+    } catch (e) {
+        console.log(e.message);
+        res.writeHead(400, { "content-type": "text/plain" });
+        res.end(e.message);
+    }
 });
 
 languishes.get("/clips/:id/spectrogram", function (req, res) {

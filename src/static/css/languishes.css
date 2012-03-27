@@ -9,12 +9,15 @@
 
 html {
     height: 100%;
+    background: #eeeeee;
 }
 
 body {
     margin:0;
     padding:0;
     height:100%;
+    background: #eeeeee;
+
     font-size: 14px;
     line-height: 1.4em;
     font-family: "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
@@ -104,17 +107,98 @@ body {
     user-select: none;
 }
 
-/* Clip List View
-#clipvis .clipdisplay
-#todo-list li.editing {
+/* Clip List View */
+ul {
+    list-style: none;
+    margin:0px;
+    padding:0px;
+}
+
+#cliplist-container {
+    width: 480px;
+    margin: 0 auto 40px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+    -o-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+    box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+}
+
+#cliplist {
+    margin-top: 10px;
+}
+
+#cliplist li {
+    position: relative;
+    display: block;
+    width: auto;
+    font-size: 24px;
+    color: #666;
+    padding: 0.25em 0.5em 0.25em 0.5em;
+    border: none;
+    letter-spacing: -1px;
+    background-color: #f9f9f9;
+    -webkit-transition-property: hover;
+    -webkit-transition: background-color 0.15s ease-in-out;
+    -moz-transition: background-color 0.15s linear 0s;
+    -o-transition-property: background-color;
+    -o-transition-duration: 0.15s;
+}
+
+#cliplist li:after {
+    content: "\0020";
+    display: block;
+    height: 0;
+    clear: both;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+#cliplist li a {
+    display: block;
+    text-decoration: none;
+    font-weight: normal;
+    color: #000;
+    outline: none;
+    position: relative;
+    z-index: 2;
+}
+
+#cliplist li:hover {
+    background-color: #eee;
+}
+
+#cliplist li:hover a {
+    color: #33D;
+}
+
+#cliplist li.editing {
     padding: 0;
     border-bottom: 0;
 }
-#todo-list .editing .display,
-#todo-list .edit {
+
+#cliplist .editing .display,
+#cliplist .clipedit {
     display: none;
 }
-#todo-list .editing .edit {
+
+#cliplist .editing .clipedit {
     display: block;
 }
-*/
+
+#cliplist .editing input {
+    width: 444px;
+    font-size: 24px;
+    font-family: inherit;
+    margin: 0;
+    line-height: 1.6em;
+    border: 0;
+    outline: none;
+    padding: 10px 7px 0px 27px;
+    border: 1px solid #999999;
+    -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+    -o-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+    box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+}

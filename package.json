@@ -16,7 +16,8 @@
         "formidable": ">= 1.0.0",
         "redis": ">= 0.7.0",
         "socket.io": ">= 0.8.0",
-        "stache": ">= 0.1.0"
+        "stache": ">= 0.1.0",
+        "validator": ">= 0.4.5"
     },
     "devDependencies": {
         "vows": ">= 0.6.x"
