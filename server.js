@@ -181,15 +181,8 @@ languishes.get("/clips/:id/spectrogram", function (req, res) {
 
 languishes.get("/clips/:id/segments", function (req, res) {
     var clip_id = req.params.id;
-    languishes.clip_library.get_clip_segments(clip_id, function (segments) {
-        var multi = redis.multi();
-        for (i in segments) {
-            multi.hgetall("clip:" + clip_id + ":segment:" + segments[i]);
-        }
-
-        multi.exec(function (err, replies) {
-            res.json(replies);
-        });
+    languishes.clip_library.get_all_clip_segments(clip_id, function (segments) {
+        res.json(segments);
     });
 });
 

@@ -69,10 +69,43 @@ Worker.prototype.operations = {
         }
 
         var cl = this.clip_library;
+        var redis = this.redis;
         xlabel.parse_xlabel_file(task.source, function (result) {
             // The range may be null, in which case nothing will change.
             var remapped = xlabel.remap_to_range(result, task.range);
             cl.add_xlabel_segments_for_clip(task.clip_id, task.layer, remapped);
+
+            // Add another task for assigning the clip a name, now that we've
+            // got some segments that sort of describe its contents:
+            redis.lpush("work_queue", JSON.stringify({
+                op: "assign clip name",
+                clip_id: task.clip_id
+            }));
+
+            cb(task, true);
+        });
+    },
+
+    "assign clip name": function (task, cb) {
+        var redis = this.redis;
+        this.clip_library.get_all_clip_segments(task.clip_id, function (segments) {
+            var tokens = [ ];
+            for (i in segments) {
+                var word = segments[i].label.split(/[,;\s]/)[0];
+                if (word && word[0] != "<")
+                    tokens.push(word);
+            }
+
+            var name = tokens.join(" ").replace(/^\s+|\s+$/g, "");
+            if (name.length > 30) {
+                name = name.slice(0, 30).replace(/\s+$/g, "");
+                name += "...";
+            }
+
+            if (name.match(/\S/)) {
+                redis.hsetnx("clip:" + task.clip_id, "name", name);
+            }
+
             cb(task, true);
         });
     }

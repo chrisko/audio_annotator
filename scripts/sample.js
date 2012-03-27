@@ -146,8 +146,7 @@ async.waterfall([
                                      clip_id: clip_id,
                                      source: wordsfile,
                                      range: item["Clip Range"],
-                                     layer: "words",
-                                     pri: "low" })
+                                     layer: "words" })
                 );
 
                 // And another for the .phones file:
@@ -158,8 +157,7 @@ async.waterfall([
                                      clip_id: clip_id,
                                      source: phonesfile,
                                      range: item["Clip Range"],
-                                     layer: "phones",
-                                     pri: "low" })
+                                     layer: "phones" })
                 );
                 */
 

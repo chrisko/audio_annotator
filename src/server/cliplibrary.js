@@ -61,8 +61,7 @@ ClipLibrary.prototype.audit_contents = function (laboriously) {
         if (laboriously) {
             this.redis.lpush("work_queue",
                     JSON.stringify({ op: "verify checksum",
-                                     target: file_path,
-                                     pri: "low" }));
+                                     target: file_path }));
         }
     }
 
@@ -72,8 +71,7 @@ ClipLibrary.prototype.audit_contents = function (laboriously) {
     for (f in new_files) {
         this.redis.lpush("work_queue",
                 JSON.stringify({ op: "import new file",
-                                 target: this.new_uploads_dir + "/" + new_files[f],
-                                 pri: "med" }));
+                                 target: this.new_uploads_dir + "/" + new_files[f] }));
     }
 };
 
@@ -221,6 +219,21 @@ ClipLibrary.prototype.get_all_clips = function (cb) {
 ClipLibrary.prototype.get_clip_segments = function (clip_id, cb) {
     this.redis.zrange("clip:" + clip_id + ":segments", 0, 100000, function (err, replies) {
         cb(replies);
+    });
+};
+
+ClipLibrary.prototype.get_all_clip_segments = function (clip_id, cb) {
+    var cl = this;
+    var client = this.redis;
+    this.get_clip_segments(clip_id, function (segments) {
+        var multi = client.multi();
+        for (i in segments) {
+            multi.hgetall("clip:" + clip_id + ":segment:" + segments[i]);
+        }
+
+        multi.exec(function (err, replies) {
+            cb(replies);
+        });
     });
 };
 

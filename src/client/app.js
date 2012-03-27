@@ -2,7 +2,7 @@ var Clip = Backbone.Model.extend({
     urlRoot: "/clips",
     defaults: {
         "id": null,
-        "name": "(no name)"
+        "name": null
     }
 });
 
@@ -38,7 +38,7 @@ var ClipListView = Backbone.View.extend({
                 + "<div class=\"clipdisplay\">"
                   + "<a class=\"cliplink\" href=\"#clips/<%= clip.id %>\">"
                     + "<i class=\"icon-headphones icon-large\"></i>"
-                    + "<%= clip.name || clip.id %>"
+                    + "<%= clip.get(\"name\") || clip.id %>"
                   + "</a>"
                 + "</div>"
                 + "<div class=\"clipedit\">"
