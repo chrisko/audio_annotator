@@ -70,4 +70,21 @@ if [[ ! -f reset.css || ! -f page-player.css ]]; then
     $CURLCMD $SOUNDMANAGER_URL/$SOUNDMANAGER_SHA1/demo/page-player/css/page-player.css > page-player.css
 fi
 
+## Font ########################################################################
+cd ..
+mkdir font &> /dev/null || true
+cd font
+
+if [[ `ls | wc -l` -eq 0 ]]; then
+    echo "Fetching Font Awesome..."
+    FONTAWESOME_URL=https://raw.github.com/FortAwesome/Font-Awesome
+    FONTAWESOME_SHA1=563a6f3cba56ac802af9d898c5b9a3401e6faabf
+    # Grab the CSS first:
+    $CURLCMD $FONTAWESOME_URL/$FONTAWESOME_SHA1/css/font-awesome.css > ../css/font-awesome.css
+    # Then all the various font types, of which there are many:
+    for EXT in eot svg svgz ttf woff; do
+        $CURLCMD $FONTAWESOME_URL/$FONTAWESOME_SHA1/font/fontawesome-webfont.$EXT > fontawesome-webfont.$EXT
+    done
+fi
+
 cd ../../..

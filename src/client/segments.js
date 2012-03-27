@@ -144,15 +144,10 @@ Segments.prototype.render = function (range) {
         // the segment's rectangle width, to see if we need to scale the text:
         var rect_to_text_width = rect.attr("width") / text.node().getBBox().width;
         if (rect_to_text_width < 1) {
-            console.log(this_segment.get("label").split(/[,.]/)[0] + ": " + rect_to_text_width);
             // A simple SVG scale() would actually transform the coordinates
             // as well. We need to translate first, and then scale:
             text.attr("transform", "translate(" + (-1 * parseFloat(text.attr("x")) * (rect_to_text_width - 1)) + ", 0) "
                                  + "scale(" + rect_to_text_width + ", 1)");
-
-            //text.attr("transform", "translate(-" + Math.round(parseFloat(text.attr("x")) * (rect_to_text_width - 1))
-            //                             + ", -" + Math.round(parseFloat(text.attr("y")) * (rect_to_text_width - 1)) + ") "
-            //                     + "scale(" + rect_to_text_width + ")");
         }
     }
 };

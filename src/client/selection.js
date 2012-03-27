@@ -86,7 +86,6 @@ Selection.prototype.update = function (new_x, finalize) {
 
     if (finalize) {
         this.finalized = true;
-        console.log("Finalized selection at: [" + this.start + ", " + this.end + "]");
         // Tell the audio to cue up at the right spot for playback:
         var start_spot = this.start / this.width(),
             end_spot = this.end / this.width();

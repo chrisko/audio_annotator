@@ -58,7 +58,7 @@ languishes.configure(function() {
     // form, or JSON data) and store the parameters is req.body.
     languishes.use(express.bodyParser());
 
-    languishes.use(express.logger({ format: ":method :url" }));
+    //languishes.use(express.logger({ format: ":method :url" }));
     languishes.use(express.static(config.static_dir));
 });
 

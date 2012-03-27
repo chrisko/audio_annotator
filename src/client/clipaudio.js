@@ -119,6 +119,4 @@ ClipAudio.prototype.cue_up_portion = function (start, end) {
     this.sound.setPosition(this.sound.from);
     if (start < end)
         this.sound.to = end * this.sound.duration;
-
-    console.log("from: " + this.sound.from + ", to: " + this.sound.to);
 };

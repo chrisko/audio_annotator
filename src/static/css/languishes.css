@@ -15,7 +15,9 @@ body {
     margin:0;
     padding:0;
     height:100%;
-    font:100% normal "verdana","arial","tahoma","sans serif";
+    font-size: 14px;
+    line-height: 1.4em;
+    font-family: "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
 }
 
 #clipvis {
@@ -73,21 +75,21 @@ body {
 }
 
 #playmarker {
-    stroke: #F00;
+    stroke: #F33;
     stroke-width: 2;
     z-index:25;
 }
 
 .segment {
-    fill: #222;
+    fill: #DDD;
     stroke: #777;
     stroke-width: 2;
     z-index:25;
 }
 
 .label {
-    fill: white;
-    font-family: Verdana;
+    fill: black;
+    font-family: "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
     font-size: 12;
     z-index:26;
 

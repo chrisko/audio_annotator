@@ -37,6 +37,7 @@ var ClipListView = Backbone.View.extend({
               + "<li>"
                 + "<div class=\"clipdisplay\">"
                   + "<a class=\"cliplink\" href=\"#clips/<%= clip.id %>\">"
+                    + "<i class=\"icon-headphones icon-large\"></i>"
                     + "<%= clip.name || clip.id %>"
                   + "</a>"
                 + "</div>"
