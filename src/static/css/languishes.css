@@ -1,3 +1,4 @@
+/* High Level *****************************************************************/
 * {
     /* border:1px solid red !important; */
 
@@ -23,6 +24,7 @@ body {
     font-family: "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
 }
 
+/* Clip Visualization *********************************************************/
 #clipvis {
     position:absolute;
     top:0;
@@ -30,7 +32,6 @@ body {
     height:100%;
     width:100%;
     visibility:visible;
-    /*padding:20px 20px 20px 20px;*/
 }
 
 #spectrogram {
@@ -40,7 +41,6 @@ body {
     height:100%;
     width:100%;
     visibility:visible;
-    /*padding:20px 20px 20px 20px;*/
 
     z-index:1;  /* Behind. */
 }
@@ -52,7 +52,6 @@ body {
     height:100%;
     width:100%;
     visibility:visible;
-    /*padding:20px 20px 20px 20px;*/
 
     z-index:10;
 }
@@ -107,13 +106,10 @@ body {
     user-select: none;
 }
 
-/* Clip List View */
-ul {
-    list-style: none;
-    margin:0px;
-    padding:0px;
-}
+/* Clip List View *************************************************************/
+/* Based heavily on the Backbone Todo sample application's CSS. */
 
+/* The overall container for the list of clips, floating at the page center. */
 #cliplist-container {
     width: 480px;
     margin: 0 auto 40px;
@@ -125,77 +121,74 @@ ul {
     box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
 }
 
-#cliplist {
+/* The single ul element, containing all the clips as li items. */
+#cliplist-container ul#cliplist {
+    list-style: none;
+    margin:0px;
     margin-top: 10px;
+    padding:0px;
 }
 
-#cliplist li {
+/* Each li item within the ul element. */
+#cliplist-container ul#cliplist li {
+    padding: 15px 20px 15px 0;
     position: relative;
-    display: block;
-    width: auto;
     font-size: 24px;
-    color: #666;
-    padding: 0.25em 0.5em 0.25em 0.5em;
-    border: none;
-    letter-spacing: -1px;
-    background-color: #f9f9f9;
-    -webkit-transition-property: hover;
-    -webkit-transition: background-color 0.15s ease-in-out;
-    -moz-transition: background-color 0.15s linear 0s;
-    -o-transition-property: background-color;
-    -o-transition-duration: 0.15s;
+    /* Draw a thin grey border at the bottom of each item. */
+    border-bottom: 1px solid #cccccc;
+    *zoom: 1;
 }
 
-#cliplist li:after {
-    content: "\0020";
-    display: block;
-    height: 0;
-    clear: both;
-    overflow: hidden;
-    visibility: hidden;
+/* When hovering over an li item, shade the background. */
+#cliplist li:hover {
+    background-color: #eee;
 }
 
+/* Display links in the item plainly, and in black. */
 #cliplist li a {
-    display: block;
+    /*display: block;*/
     text-decoration: none;
-    font-weight: normal;
     color: #000;
     outline: none;
     position: relative;
     z-index: 2;
 }
 
-#cliplist li:hover {
-    background-color: #eee;
+/* Make visited item links display as dark purple. */
+#cliplist li a:visited {
+    color: #660066;
 }
 
+/* But while hovering, change *all* the links to blue. */
 #cliplist li:hover a {
     color: #33D;
 }
 
-#cliplist li.editing {
-    padding: 0;
-    border-bottom: 0;
+/* While editing, hide the regular clip item display. */
+#cliplist .editing .clipdisplay {
+    display: none;
 }
 
-#cliplist .editing .display,
+/* By default (when not editing) hide the text input box. */
 #cliplist .clipedit {
     display: none;
 }
 
+/* But while editing, show the input box. */
 #cliplist .editing .clipedit {
     display: block;
 }
 
+/* The input box for an item being edited. */
 #cliplist .editing input {
-    width: 444px;
-    font-size: 24px;
+    width: 440px;  /* 480 - 20 - 20 */
+    display: block;
+    font-size: inherit;
     font-family: inherit;
-    margin: 0;
-    line-height: 1.6em;
+    line-height: 1.4em;
     border: 0;
     outline: none;
-    padding: 10px 7px 0px 27px;
+    padding: 6px;
     border: 1px solid #999999;
     -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
     -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;

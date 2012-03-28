@@ -50,12 +50,6 @@
         </script>
 
         <!-- Templates -->
-        <script type="text/template" id="cliplist-template">
-            <div id="cliplist-container">
-                <ul id="cliplist"></ul>
-            </div>
-        </script>
-
         <script type="text/template" id="clipview-template">
             <center>
                 <div id="clipvis">
@@ -65,10 +59,18 @@
             </center>
         </script>
 
+        <!-- The list of clips. -->
+        <script type="text/template" id="cliplist-template">
+            <div id="cliplist-container">
+                <ul id="cliplist"></ul>
+            </div>
+        </script>
+
+        <!-- A single item in the list of clips. -->
         <script type="text/template" id="clipitem-template">
             <div class="clipdisplay">
-                <a class="cliplink" href="#clips/<%= clip.id %>">
-                    <i class="icon-headphones"></i>
+                <a href="#clips/<%= clip.id %>">
+                    <i class="icon-headphones icon-large"></i>
                 </a>
                 <label class="clipname">
                     <%= clip.get("name") || clip.id %>
@@ -77,6 +79,16 @@
             <div class="clipedit">
                 <input class="clipinput" type="text" value=""></input>
             </div>
+        </script>
+
+        <script type="text/template" id="annotation-template">
+            <form action="http://www.mturk.com/mturk/externalSubmit" method="POST">
+                <input type="hidden" name="assignmentId">
+                <input type="hidden" name="hitId">
+
+                <input type="hidden" name="start">
+                <input type="hidden" name="end">
+            </form>
         </script>
 
     </body>
