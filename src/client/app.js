@@ -52,7 +52,8 @@ var ClipItemView = Backbone.View.extend({
 
     close: function () {
         // Save the new clip name to the backend:
-        this.model.save({ name: this.input.val() });
+        if (this.input.val().match(/\S/))
+            this.model.save({ name: this.input.val() });
         // And instruct our CSS to remove the input box:
         this.$el.removeClass("editing");
     }
