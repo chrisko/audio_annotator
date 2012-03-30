@@ -1,9 +1,10 @@
 // Chris Koenig <ckoenig@seas.upenn.edu>
 // CIS-400 Senior Design Project
 
-function Selection(delegate, svg_id) {
+function Selection(delegate, svg_id, clip) {
     this.delegate = delegate;
     this.svg_id = svg_id;
+    this.clip = clip;
 
     // To begin with, nothing's selected. All these are null/false.
     this.anchor = null;
@@ -13,6 +14,7 @@ function Selection(delegate, svg_id) {
 
     // When we're finally bound to the DOM, complete our initialization:
     this.delegate.on("view:bound_to_dom", this.bind_to_dom, this);
+    this.delegate.on("segment:clicked", this.select_segment, this);
     this.delegate.on("window:resize", this.resize, this);
 }
 
@@ -59,6 +61,14 @@ Selection.prototype.width = function () {
     return $(this.svg_id).width();
 };
 
+Selection.prototype.select_segment = function (segment) {
+    if (this.svg) {
+        this.start = segment.get("start") / this.clip.get("duration") * this.width();
+        this.end = segment.get("end") / this.clip.get("duration") * this.width();
+        this.redraw();
+    }
+};
+
 Selection.prototype.resize = function () {
     if (this.svg) {
         this.svg.select("#selection").remove();
@@ -89,18 +99,11 @@ Selection.prototype.update = function (new_x, finalize) {
         // Tell the audio to cue up at the right spot for playback:
         var start_spot = this.start / this.width(),
             end_spot = this.end / this.width();
+        // And trigger the "selection:finalized" event for listeners:
         this.delegate.trigger("selection:finalized", start_spot, end_spot);
-        this.open_text_entry();
     }
 
     this.redraw();
-};
-
-Selection.prototype.open_text_entry = function () {
-    if (!this.svg) return;
-    if (this.anchor == null) return;
-
-    // TODO
 };
 
 Selection.prototype.redraw = function () {

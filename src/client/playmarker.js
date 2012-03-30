@@ -3,13 +3,15 @@
 
 // Playmarker to show audio playback.
 
-function Playmarker(delegate, svg_id) {
+function Playmarker(delegate, svg_id, clip) {
     this.delegate = delegate;
     this.svg_id = svg_id;
+    this.clip = clip;
 
     this.delegate.on("audio:playing", this.update, this);
     this.delegate.on("audio:paused", this.pause, this);
     this.delegate.on("audio:done_playing", this.pause, this);
+    this.delegate.on("segment:clicked", this.pause_on_segment, this);
     this.delegate.on("selection:finalized", this.pause, this);
     this.delegate.on("view:bound_to_dom", this.find_svg, this);
     this.delegate.on("window:resize", this.resize, this);
@@ -66,6 +68,10 @@ Playmarker.prototype.update = function (pos, dur) {
         .ease("linear")
         .attr("x1", starting_x + x_offset)
         .attr("x2", starting_x + x_offset);
+};
+
+Playmarker.prototype.pause_on_segment = function (segment) {
+    this.pause(segment.get("start") / this.clip.get("duration"));
 };
 
 Playmarker.prototype.pause = function (where) {

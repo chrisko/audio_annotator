@@ -110,9 +110,9 @@ var ClipView = Backbone.View.extend({
         this.$el.html(this.template({ id: this.model.id }));
 
         this.audio = new ClipAudio(this, this.model.id);
-        this.playmarker = new Playmarker(this, "#clipsvg");
+        this.playmarker = new Playmarker(this, "#clipsvg", this.model);
         this.segments = new Segments(this, this.model, "#clipsvg");
-        this.selection = new Selection(this, "#clipsvg");
+        this.selection = new Selection(this, "#clipsvg", this.model);
         this.waveform = new Waveform(this, "#clipsvg", this.audio);
 
         return this;

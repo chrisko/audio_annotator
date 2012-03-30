@@ -46,6 +46,7 @@ function Segments(delegate, clip, svg_id) {
 
     // Bind to the events we're interested in:
     this.delegate.on("segments:loaded", this.render, this);
+    this.delegate.on("selection:finalized", this.unselect, this);
     this.delegate.on("view:bound_to_dom", this.find_svg, this);
 }
 
@@ -103,6 +104,11 @@ Segments.prototype.do_ranges_overlap = function (range1, range2) {
     return false;
 };
 
+Segments.prototype.unselect = function () {
+    if (this.svg)
+        this.svg.select(".selected").attr("class", "segment");
+};
+
 Segments.prototype.render = function (range) {
     // We can't render until we've loaded the data and looked up our SVG.
     if (!this.loaded || !this.svg) return;
@@ -118,7 +124,9 @@ Segments.prototype.render = function (range) {
         if (tend > 1) tend = 1;
 
         // Put the segment rectangle and the label text in the same SVG group.
-        var group = this.svg.append("g");
+        var group = this.svg.append("g")
+            .attr("class", "segment-group");
+
         // The segment rectangle has to come before the text, since it's underneath:
         var rect = group.append("rect")
             .attr("class", "segment")
@@ -131,6 +139,14 @@ Segments.prototype.render = function (range) {
             .attr("class", "label")
             .attr("text-anchor", "middle")
             .text(this_segment.get("label").split(/[;,]/)[0]);
+
+        group.on("click", _.bind(function (which_segment, which_rect) {
+            // Remove the "selected" class from any previously selected segment:
+            this.svg.select(".selected").attr("class", "segment");
+            // And add it onto the currently selected segment instead:
+            which_rect.attr("class", "segment selected");
+            this.delegate.trigger("segment:clicked", which_segment);
+        }, this, this_segment, rect));
 
         // Calculate text x- and y-coordinates, remembering "text-anchor: middle" above:
         var text_x = parseFloat(rect.attr("x")) + 0.5 * parseFloat(rect.attr("width")),
@@ -146,8 +162,10 @@ Segments.prototype.render = function (range) {
         if (rect_to_text_width < 1) {
             // A simple SVG scale() would actually transform the coordinates
             // as well. We need to translate first, and then scale:
-            text.attr("transform", "translate(" + (-1 * parseFloat(text.attr("x")) * (rect_to_text_width - 1)) + ", 0) "
-                                 + "scale(" + rect_to_text_width + ", 1)");
+            var t = -1 * parseFloat(text.attr("x")) * (rect_to_text_width - 1);
+            var translate = "translate(" + t + ", 0) ";
+            var scale = "scale(" + rect_to_text_width + ", 1)";
+            text.attr("transform", translate + scale);
         }
     }
 };
