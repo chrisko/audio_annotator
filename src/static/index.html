@@ -43,7 +43,7 @@
             .script("/waveform.js")
             .wait(function () {
                 $(document).ready(function () {
-                    languishes = new Languishes();
+                    window.app = new Languishes();
                     Backbone.history.start();
                 });
             });

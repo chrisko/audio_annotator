@@ -34,9 +34,14 @@ var ClipItemView = Backbone.View.extend({
     },
 
     events: {
+        "click .clipdisplay": "route",
         "dblclick label.clipname": "edit",
         "keypress .clipinput": "update_on_enter",
         "blur .clipinput": "close"
+    },
+
+    route: function () {
+        window.app.navigate("clips/" + this.model.id, { trigger: true });
     },
 
     edit: function () {
@@ -196,7 +201,7 @@ function ViewTransition() {
     };
 }
 
-var Languishes = Backbone.Router.extend({
+Languishes = Backbone.Router.extend({
     // Maps URL fragments to functions below, to handle link rendering.
     routes: {
         "": "index",
