@@ -7,9 +7,10 @@
         <title>languishes</title>
 
         <!-- CSS -->
-        <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" />
+   <!-- <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" /> -->
         <link rel="stylesheet" type="text/css" href="/css/font-awesome.css" />
         <link rel="stylesheet" type="text/css" href="/css/languishes.css" />
+    </head>
 
     <body>
         <div class="container" id="header">
@@ -27,84 +28,82 @@
             </div>
         </div>
 
-        <div class="container" id="main">
-        </div>
+        <div class="container" id="main"></div>
 
-        <div class="container" id="footer">
-        </div>
-
-        <script src="/js/LAB.js"></script>
-        <script>
-            $LAB
-            // Third-party scripts:
-            .script("/js/jquery.js")
-            .script("/js/underscore.js").wait()
-            .script("/js/soundmanager2-nodebug-jsmin.js")
-            .script("/js/d3.js")
-          //.script("/socket.io/socket.io.js")
-            .script("/js/backbone.js")
-            .script("/js/bootstrap.js")
-            .wait(function () {
-                // Handle all our SoundManager2 settings:
-                soundManager.consoleOnly = true;
-                soundManager.debugMode = false;
-                soundManager.url = "/swf/";
-                soundManager.useFastPolling = true;
-                soundManager.useHighPerformance = true;
-            }).wait()
-            // My own scripts:
-            .script("/js/app.js")
-            .script("/js/clipaudio.js")
-            .script("/js/playmarker.js")
-            .script("/js/segments.js")
-            .script("/js/selection.js")
-            .script("/js/waveform.js")
-            .wait(function () {
-                $(document).ready(function () {
-                    window.app = new Languishes();
-                    Backbone.history.start();
-                });
-            });
-        </script>
-
-        <!-- Templates -->
-        <script type="text/template" id="clipview-template">
-            <center>
-                <div id="clipvis">
-                    <img id="spectrogram" src="clips/<%= id %>/spectrogram"></img>
-                    <svg id="clipsvg"></svg>
-                    <div id="editpane"></div>
-                </div>
-            </center>
-        </script>
-
-        <!-- The list of clips. -->
-        <script type="text/template" id="cliplist-template">
-            <div id="cliplist-container">
-                <ul id="cliplist"></ul>
-            </div>
-        </script>
-
-        <!-- A single item in the list of clips. -->
-        <script type="text/template" id="clipitem-template">
-            <div class="clipdisplay">
-                <a href="#clips/<%= clip.id %>"><i class="icon-headphones"></i></a>
-                <%= clip.get("name") || clip.id %>
-            </div>
-            <div class="clipedit">
-                <input class="clipinput" type="text" value=""></input>
-            </div>
-        </script>
-
-        <script type="text/template" id="annotation-template">
-            <form action="http://www.mturk.com/mturk/externalSubmit" method="POST">
-                <input type="hidden" name="assignmentId">
-                <input type="hidden" name="hitId">
-
-                <input type="hidden" name="start">
-                <input type="hidden" name="end">
-            </form>
-        </script>
-
+        <div class="container" id="footer"></div>
     </body>
+
+    <script src="/js/LAB.js"></script>
+    <script>
+        $LAB
+        // Third-party scripts:
+        .script("/js/jquery.js")
+        .script("/js/underscore.js").wait()
+        .script("/js/soundmanager2-nodebug-jsmin.js")
+        .script("/js/d3.js")
+      //.script("/socket.io/socket.io.js")
+        .script("/js/backbone.js")
+        .script("/js/bootstrap.js")
+        .wait(function () {
+            // Handle all our SoundManager2 settings:
+            soundManager.consoleOnly = true;
+            soundManager.debugMode = false;
+            soundManager.url = "/swf/";
+            soundManager.useFastPolling = true;
+            soundManager.useHighPerformance = true;
+        }).wait()
+        // My own scripts:
+        .script("/js/app.js")
+        .script("/js/clipaudio.js")
+        .script("/js/playmarker.js")
+        .script("/js/segments.js")
+        .script("/js/selection.js")
+        .script("/js/waveform.js")
+        .wait(function () {
+            $(document).ready(function () {
+                window.app = new Languishes();
+                Backbone.history.start();
+            });
+        });
+    </script>
+
+    <!-- Templates -->
+    <script type="text/template" id="clipview-template">
+        <center>
+            <div id="clipvis">
+                <img id="spectrogram" src="clips/<%= id %>/spectrogram"></img>
+                <svg id="clipsvg"></svg>
+                <div id="editpane"></div>
+            </div>
+        </center>
+    </script>
+
+    <!-- The list of clips. -->
+    <script type="text/template" id="cliplist-template">
+        <div id="cliplist-container">
+            <ul id="cliplist"></ul>
+        </div>
+    </script>
+
+    <!-- A single item in the list of clips. -->
+    <script type="text/template" id="clipitem-template">
+        <div class="clipdisplay">
+            <a href="#clips/<%= clip.id %>"><i class="icon-headphones"></i></a>
+            <%= clip.get("name") || clip.id %>
+        </div>
+        <div class="clipedit">
+            <input class="clipinput" type="text" value=""></input>
+        </div>
+    </script>
+
+    <script type="text/template" id="annotation-template">
+        <form action="http://www.mturk.com/mturk/externalSubmit" method="POST">
+            <input type="hidden" name="assignmentId">
+            <input type="hidden" name="hitId">
+
+            <input type="hidden" name="start">
+            <input type="hidden" name="end">
+        </form>
+    </script>
+
 </html>

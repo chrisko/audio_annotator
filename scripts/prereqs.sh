@@ -1,6 +1,7 @@
 #!/bin/sh -e
 
-CURLCMD="curl --progress-bar"
+# The --location means it follows 301, 302, and 303 redirects.
+CURLCMD="curl --progress-bar --location"
 TOPDIR=`pwd`
 
 SITEDIR=$TOPDIR/site
@@ -73,12 +74,6 @@ if [[ ! -f js/LAB.js ]]; then
     $CURLCMD $LABJS_URL/master/LAB.js > js/LAB.js
 fi
 
-## CSS #########################################################################
-if [[ ! -f css/reset.css ]]; then
-    echo "Fetching reset.css..."
-    $CURLCMD http://meyerweb.com/eric/tools/css/reset/reset.css > css/reset.css
-fi
-
 ## Font ########################################################################
 if [[ `ls font/ | wc -l` -eq 0 ]]; then
     echo "Fetching Font Awesome..."
@@ -96,14 +91,30 @@ fi
 ## Bootstrap ###################################################################
 cd $SITEDIR
 if [[ ! -d bootstrap ]]; then
-    echo "Fetching and unzipping bootstrap..."
-    BOOTSTRAP_URL=http://twitter.github.com/bootstrap
-    $CURLCMD $BOOTSTRAP_URL/assets/bootstrap.zip > bootstrap.zip
+    echo "Fetching, unzipping, and building Bootstrap..."
+    BOOTSTRAP_URL=https://github.com/twitter/bootstrap/zipball/master
+    $CURLCMD $BOOTSTRAP_URL > bootstrap.zip
 
+    # Unzip the file, producing a directory like "twitter-bootstrap-d335adf":
     unzip -q bootstrap.zip
-    cp bootstrap/css/* $STATICDIR/css
+    rm bootstrap.zip
+
+    # Move that directory to plain old "bootstrap", and enter it:
+    mv twitter-bootstrap-* bootstrap
+    cd bootstrap
+
+    # Remove the "sprites.less" reference, since we're using Font Awesome icons:
+    sed -i ".old" "/sprites/d" less/bootstrap.less
+
+    # And build the contents, for the JS file. We'll handle the less part later.
+    make bootstrap
     cp bootstrap/js/* $STATICDIR/js
 fi
+
+## Less/CSS ####################################################################
+cd $TOPDIR
+lessc --include-path="site/bootstrap/less" src/static/languishes.less \
+    > site/static/css/languishes.css
 
 # Don't forget to return us to that top-level directory.
 cd $TOPDIR

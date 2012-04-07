@@ -21,4 +21,3 @@ for FILE in `ls src/client/*.js`; do
 done
 
 cp src/static/*.html ./site/static/
-cp src/static/css/*.css ./site/static/css/
