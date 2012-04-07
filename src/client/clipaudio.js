@@ -1,12 +1,6 @@
 // Chris Koenig <ckoenig@seas.upenn.edu>
 // CIS-400 Senior Design Project
 
-soundManager.consoleOnly = true;
-soundManager.debugMode = false;
-soundManager.url = "/";
-soundManager.useFastPolling = true;
-soundManager.useHighPerformance = true;
-
 soundManager.ontimeout(function (status_msg) {
     $("#error").append("SoundManager2 timed out: " + status_msg);
 });

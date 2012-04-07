@@ -10,7 +10,6 @@
         <link rel="stylesheet" type="text/css" href="/css/reset.css" />
         <link rel="stylesheet" type="text/css" href="/css/languishes.css" />
         <link rel="stylesheet" type="text/css" href="/css/font-awesome.css" />
-        <link rel="stylesheet" type="text/css" href="/css/page-player.css" />
 
     <body>
         <div id="container">
@@ -24,23 +23,31 @@
             </div>
         </div>
 
-        <script src="LAB.js"></script>
+        <script src="/js/LAB.js"></script>
         <script>
             $LAB
             // Third-party scripts:
-            .script("/jquery.js")
-            .script("/underscore.js").wait()
-            .script("/soundmanager2-nodebug-jsmin.js")
-            .script("/d3.js")
-            .script("/socket.io/socket.io.js")
-            .script("/backbone.js").wait()
+            .script("/js/jquery.js")
+            .script("/js/underscore.js").wait()
+            .script("/js/soundmanager2-nodebug-jsmin.js")
+            .script("/js/d3.js")
+          //.script("/socket.io/socket.io.js")
+            .script("/js/backbone.js")
+            .wait(function () {
+                // Handle all our SoundManager2 settings:
+                soundManager.consoleOnly = true;
+                soundManager.debugMode = false;
+                soundManager.url = "/swf/";
+                soundManager.useFastPolling = true;
+                soundManager.useHighPerformance = true;
+            }).wait()
             // My own scripts:
-            .script("/app.js")
-            .script("/clipaudio.js")
-            .script("/playmarker.js")
-            .script("/segments.js")
-            .script("/selection.js")
-            .script("/waveform.js")
+            .script("/js/app.js")
+            .script("/js/clipaudio.js")
+            .script("/js/playmarker.js")
+            .script("/js/segments.js")
+            .script("/js/selection.js")
+            .script("/js/waveform.js")
             .wait(function () {
                 $(document).ready(function () {
                     window.app = new Languishes();

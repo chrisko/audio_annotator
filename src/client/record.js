@@ -17,7 +17,7 @@ function timecode(ms) {
 }
 
 Recorder.initialize({
-    swfSrc: "recorder.swf"
+    swfSrc: "/swf/recorder.swf"
 });
 
 function record() {

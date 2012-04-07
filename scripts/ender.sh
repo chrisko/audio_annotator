@@ -12,12 +12,12 @@ for FILE in `ls src/client/*.js`; do
     # Don't run the closure compile on npm start, for speed's sake.
     if [[ $npm_lifecycle_event != "prestart" ]]; then
         echo "Compiling $FILE..."
-        cat $FILE | closure > site/static/`basename $FILE ".js"`-min.js
+        cat $FILE | closure > site/static/js/`basename $FILE ".js"`-min.js
         [[ $? -gt 0 ]] && exit 1
     fi
 
     # Copy the raw (dev) version of the file over, regardless:
-    cp $FILE site/static/`basename $FILE`
+    cp $FILE site/static/js/`basename $FILE`
 done
 
 cp src/static/*.html ./site/static/
