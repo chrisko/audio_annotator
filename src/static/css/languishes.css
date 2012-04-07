@@ -1,20 +1,9 @@
 /* High Level *****************************************************************/
-* {
-    /* See http://paulirish.com/2012/box-sizing-border-box-ftw */
-    -webkit-box-sizing:border-box; /* Safari/Chrome, other WebKit */
-    -moz-box-sizing:border-box;    /* Firefox, other Gecko */
-    box-sizing:border-box;         /* Opera/IE 8+ */
-}
-
 html {
-    height: 100%;
     background: #eeeeee;
 }
 
 body {
-    margin:0;
-    padding:0;
-    height:100%;
     background: #eeeeee;
 
     font-size: 14px;
@@ -101,7 +90,7 @@ body {
     fill: #D66;
 }
 
-#clipvis .label {
+.clipdisplay {
     fill: black;
     font-family: "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
     font-size: 12;
@@ -164,12 +153,10 @@ body {
 }
 
 /* Display links in the item plainly, and in black. */
-#cliplist li a {
-    /*display: block;*/
+.clipdisplay a {
     text-decoration: none;
     color: #000;
     outline: none;
-    position: relative;
     z-index: 2;
 }
 

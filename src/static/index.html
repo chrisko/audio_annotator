@@ -7,9 +7,9 @@
         <title>languishes</title>
 
         <!-- CSS -->
-        <link rel="stylesheet" type="text/css" href="/css/reset.css" />
-        <link rel="stylesheet" type="text/css" href="/css/languishes.css" />
+        <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" />
         <link rel="stylesheet" type="text/css" href="/css/font-awesome.css" />
+        <link rel="stylesheet" type="text/css" href="/css/languishes.css" />
 
     <body>
         <div id="container">
@@ -33,6 +33,7 @@
             .script("/js/d3.js")
           //.script("/socket.io/socket.io.js")
             .script("/js/backbone.js")
+            .script("/js/bootstrap.js")
             .wait(function () {
                 // Handle all our SoundManager2 settings:
                 soundManager.consoleOnly = true;
@@ -77,12 +78,8 @@
         <!-- A single item in the list of clips. -->
         <script type="text/template" id="clipitem-template">
             <div class="clipdisplay">
-                <a href="#clips/<%= clip.id %>">
-                    <i class="icon-headphones"></i>
-                </a>
-                <label class="clipname">
-                    <%= clip.get("name") || clip.id %>
-                </label>
+                <a href="#clips/<%= clip.id %>"><i class="icon-headphones"></i></a>
+                <%= clip.get("name") || clip.id %>
             </div>
             <div class="clipedit">
                 <input class="clipinput" type="text" value=""></input>
