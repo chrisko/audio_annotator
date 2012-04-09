@@ -95,12 +95,6 @@ var ClipView = Backbone.View.extend({
     selection: null,
     waveform: null,
 
-    events: {
-        // UI Events:
-        "mouseenter #clipvis": function () { this.$el.css("cursor", "crosshair"); },
-        "mouseleave #clipvis": function () { this.$el.css("cursor", "auto"); }
-    },
-
     template: _.template($('#clipview-template').html()),
 
     initialize: function () {
@@ -145,15 +139,6 @@ var ClipView = Backbone.View.extend({
 
     handle_resize: function (e) {
         this.trigger("window:resize");
-        if (this.waveform) {
-            this.waveform.destroy();
-            this.waveform.render();
-        }
-    },
-
-    handle_reset_play_marker: function () {
-        this.waveform.reset_play_marker();
-        return false;
     }
 });
 

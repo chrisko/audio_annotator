@@ -111,10 +111,5 @@ if [[ ! -d bootstrap ]]; then
     cp bootstrap/js/* $STATICDIR/js
 fi
 
-## Less/CSS ####################################################################
-cd $TOPDIR
-lessc --include-path="site/bootstrap/less" src/static/languishes.less \
-    > site/static/css/languishes.css
-
 # Don't forget to return us to that top-level directory.
 cd $TOPDIR
