@@ -9,6 +9,7 @@ var assert = require("assert"),
 
 var ClipLibrary = require("../src/server/cliplibrary.js");
 
+var NUM_CLIPS = 50;
 var CLIP_DURATION = 5;  // In seconds.
 var OUTPUT_DIR = "site/data/new";
 
@@ -90,7 +91,7 @@ async.waterfall([
     // Next grab five randomly-selected files:
     function (filenames, cb) {
         var audio_info = [ ];
-        var shuffled = shuffle(filenames).splice(0, 5);
+        var shuffled = shuffle(filenames).splice(0, NUM_CLIPS);
 
         // One by one, get the audio properties of each filename:
         async.forEachSeries(shuffled,
