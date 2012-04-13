@@ -19,7 +19,7 @@ var ClipItemView = Backbone.View.extend({
     tagName: "li",
 
     // view-source:http://documentcloud.github.com/backbone/examples/todos/index.html
-    template: _.template($('#clipitem-template').html()),
+    template: _.template($("#clipitem-template").html()),
 
     initialize: function () {
         _.bindAll(this, "render", "close", "remove");
@@ -65,7 +65,7 @@ var ClipItemView = Backbone.View.extend({
 });
 
 var ClipListView = Backbone.View.extend({
-    template: _.template($('#cliplist-template').html()),
+    template: _.template($("#cliplist-template").html()),
 
     initialize: function () {
         this.$el.html(this.template({ }));
@@ -88,6 +88,14 @@ var ClipListView = Backbone.View.extend({
     }
 });
 
+var RecordView = Backbone.View.extend({
+    //template: _.template($("#record-upload-template").html()),
+
+    initialize: function () {
+        //this.recorder = new Recorder(
+    }
+});
+
 var ClipView = Backbone.View.extend({
     audio: null,
     playmarker: null,
@@ -95,7 +103,7 @@ var ClipView = Backbone.View.extend({
     selection: null,
     waveform: null,
 
-    template: _.template($('#clipview-template').html()),
+    template: _.template($("#clipview-template").html()),
 
     initialize: function () {
         // Make sure these event handlers are always called with this ClipView.
@@ -108,10 +116,13 @@ var ClipView = Backbone.View.extend({
     render: function () {
         this.$el.html(this.template({ id: this.model.id }));
 
+        // Create all the subcomponents of this view:
         this.audio = new ClipAudio(this, this.model.id);
         this.playmarker = new Playmarker(this, "#clipsvg", this.model);
         this.segments = new Segments(this, this.model, "#clipsvg");
         this.selection = new Selection(this, "#clipsvg", this.model);
+        // These subcomponents depend on the above ones:
+        this.editpane = new EditPane(this, this.model, this.segments);
         this.waveform = new Waveform(this, "#clipsvg", this.audio);
 
         return this;
@@ -214,6 +225,10 @@ Languishes = Backbone.Router.extend({
             success: function () {
                 var clipview = new ClipView({ "model": clip });
                 ls.view_transition.showView(clipview);
+            },
+            error: function (err) {
+                console.log("Failed to fetch clip id " + id + ":");
+                console.log(err);
             }
         });
     }

@@ -6,10 +6,81 @@
 var Segment = Backbone.Model.extend({
     defaults: {
         "id": null,
-        "begin": null,
+        "start": null,
         "end": null,
         "layer": null,
         "label": null
+    },
+
+    render: function (clip, svg_id, delegate) {
+        var tstart = parseFloat(this.get("start")) / parseFloat(clip.get("duration"));
+        var tend = parseFloat(this.get("end")) / parseFloat(clip.get("duration"));
+
+        var svg = d3.select(svg_id);
+        var svg_width = $(svg_id).width();
+
+        if (tstart < 0) tstart = 0;
+        if (tend > 1) tend = 1;
+
+        // Put the segment rectangle and the label text in the same SVG group.
+        var group = svg.append("g")
+            .attr("class", "segment-group");
+
+        // The segment rectangle has to come before the text, since it's underneath:
+        var rect = group.append("rect")
+            .attr("class", "segment")
+            .attr("x", Math.round(tstart * svg_width))
+            .attr("y", 0)  // Top.
+            .attr("width", Math.round((tend - tstart) * svg_width))
+            .attr("height", 20);
+        // Then, on top of the rectangle comes the label text:
+        var text = group.append("text")
+            .attr("class", "label")
+            .attr("text-anchor", "middle")
+            .text(this.get("label") ? this.get("label").split(/[;,]/)[0] : "");
+
+        // Add the ids for each new SVG element, so we can access them later:
+        if (this.isNew()) {
+            group.attr("class", "segment-group new-segment");
+        } else {
+            group.attr("id", "segment-" + this.id + "-group");
+            rect.attr("id", "segment-" + this.id + "-rect");
+            text.attr("id", "segment-" + this.id + "-text");
+        }
+
+        group.on("click", _.bind(function (which_rect) {
+            if (which_rect.attr("class").match(/selected/)) return;
+            // Remove the "selected" class from any previously selected segment:
+            svg.select(".selected").attr("class", "segment");
+            // And add it onto the currently selected segment instead:
+            which_rect.attr("class", "segment selected");
+            delegate.trigger("segment:clicked", this);
+        }, this, rect));
+
+        // Calculate text x- and y-coordinates, remembering "text-anchor: middle" above:
+        var text_x = parseFloat(rect.attr("x")) + 0.5 * parseFloat(rect.attr("width")),
+            text_y = parseFloat(rect.attr("y")) + 0.5 * parseFloat(rect.attr("height"));
+        // And update the text node's CSS properties accordingly:
+        text.attr("x", Math.round(text_x))
+            .attr("y", Math.round(text_y))
+            .attr("dy", ".35em");  // Simulates "vertical-align: middle".
+
+        // Get the width of the bounding box around the text and compare it to
+        // the segment's rectangle width, to see if we need to scale the text:
+        var rect_to_text_width = rect.attr("width") / text.node().getBBox().width;
+        if (rect_to_text_width < 1) {
+            // A simple SVG scale() would actually transform the coordinates
+            // as well. We need to translate first, and then scale:
+            var t = -1 * parseFloat(text.attr("x")) * (rect_to_text_width - 1);
+            var translate = "translate(" + t + ", 0) ";
+            var scale = "scale(" + rect_to_text_width + ", 1)";
+            text.attr("transform", translate + scale);
+        }
+
+        // Add a helpful "Click to edit" tooltip to help the user out:
+        $(".segment-group:not(.new-segment) .label").tooltip({
+            title: "Click to edit", placement: "bottom"
+        });
     }
 });
 
@@ -48,6 +119,9 @@ function Segments(delegate, clip, svg_id) {
     this.delegate.on("segments:loaded", this.render, this);
     this.delegate.on("selection:finalized", this.unselect, this);
     this.delegate.on("view:bound_to_dom", this.find_svg, this);
+
+    // And to our collection's events:
+    this.collection.on("add", this.add_one, this);
 }
 
 Segments.prototype.find_svg = function () {
@@ -109,63 +183,15 @@ Segments.prototype.unselect = function () {
         this.svg.select(".selected").attr("class", "segment");
 };
 
+Segments.prototype.add_one = function (s) {
+    s.render(this.clip, this.svg_id, this.delegate);
+};
+
 Segments.prototype.render = function (range) {
     // We can't render until we've loaded the data and looked up our SVG.
     if (!this.loaded || !this.svg) return;
 
-    // First, select the segments that are visible:
     var i; for (i = 0; i < this.collection.length; i++) {
-        var this_segment = this.collection.at(i);
-
-        var tstart = parseFloat(this_segment.get("start")) / parseFloat(this.clip.get("duration"));
-        var tend = parseFloat(this_segment.get("end")) / parseFloat(this.clip.get("duration"));
-
-        if (tstart < 0) tstart = 0;
-        if (tend > 1) tend = 1;
-
-        // Put the segment rectangle and the label text in the same SVG group.
-        var group = this.svg.append("g")
-            .attr("class", "segment-group");
-
-        // The segment rectangle has to come before the text, since it's underneath:
-        var rect = group.append("rect")
-            .attr("class", "segment")
-            .attr("x", Math.round(tstart * this.width()))
-            .attr("y", 0)  // Top.
-            .attr("width", Math.round((tend - tstart) * this.width()))
-            .attr("height", 20);
-        // Then, on top of the rectangle comes the label text:
-        var text = group.append("text")
-            .attr("class", "label")
-            .attr("text-anchor", "middle")
-            .text(this_segment.get("label").split(/[;,]/)[0]);
-
-        group.on("click", _.bind(function (which_segment, which_rect) {
-            // Remove the "selected" class from any previously selected segment:
-            this.svg.select(".selected").attr("class", "segment");
-            // And add it onto the currently selected segment instead:
-            which_rect.attr("class", "segment selected");
-            this.delegate.trigger("segment:clicked", which_segment);
-        }, this, this_segment, rect));
-
-        // Calculate text x- and y-coordinates, remembering "text-anchor: middle" above:
-        var text_x = parseFloat(rect.attr("x")) + 0.5 * parseFloat(rect.attr("width")),
-            text_y = parseFloat(rect.attr("y")) + 0.5 * parseFloat(rect.attr("height"));
-        // And update the text node's CSS properties accordingly:
-        text.attr("x", Math.round(text_x))
-            .attr("y", Math.round(text_y))
-            .attr("dy", ".35em");  // Simulates "vertical-align: middle".
-
-        // Get the width of the bounding box around the text and compare it to
-        // the segment's rectangle width, to see if we need to scale the text:
-        var rect_to_text_width = rect.attr("width") / text.node().getBBox().width;
-        if (rect_to_text_width < 1) {
-            // A simple SVG scale() would actually transform the coordinates
-            // as well. We need to translate first, and then scale:
-            var t = -1 * parseFloat(text.attr("x")) * (rect_to_text_width - 1);
-            var translate = "translate(" + t + ", 0) ";
-            var scale = "scale(" + rect_to_text_width + ", 1)";
-            text.attr("transform", translate + scale);
-        }
+        this.add_one(this.collection.at(i));
     }
 };

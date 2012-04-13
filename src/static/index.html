@@ -55,6 +55,7 @@
         // My own scripts:
         .script("/js/app.js")
         .script("/js/clipaudio.js")
+        .script("/js/editpane.js")
         .script("/js/playmarker.js")
         .script("/js/segments.js")
         .script("/js/selection.js")
@@ -85,6 +86,16 @@
         </div>
     </script>
 
+    <!-- The interface for recording and uploading new clips. -->
+    <script type="text/template" id="record-upload-template">
+        <div id="recordform">
+            <label class="user-instruction">Record a new clip</label>
+        </div>
+        <div id="uploadform">
+            <label class="user-instruction">Upload a sound file</label>
+        </div>
+    </script>
+
     <!-- A single item in the list of clips. -->
     <script type="text/template" id="clipitem-template">
         <div class="clipdisplay">
@@ -93,6 +104,13 @@
         </div>
         <div class="clipedit">
             <input class="clipinput" type="text" value=""></input>
+        </div>
+    </script>
+
+    <script type="text/template" id="segment-edit-pane">
+        <div class="edit-segment-name">
+            <h3 class="edit-segment-title"><%= label %></h3>
+            <input type="button" class="btn btn-danger" value="Delete">
         </div>
     </script>
 
