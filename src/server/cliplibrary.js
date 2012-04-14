@@ -5,6 +5,7 @@
 
 var assert = require("assert"),
     async = require("async"),
+    child = require("child_process"),
     crypto = require("crypto"),
     fs = require("fs"),
     path = require("path"),
@@ -99,6 +100,27 @@ ClipLibrary.prototype.checksum_to_id = function (checksum) {
     return checksum.substr(0, 8);
 };
 
+ClipLibrary.prototype.get_spectrogram_filename = function (clip_id, cb) {
+    var dir_name = this.directory_name;
+    this.redis.hget("clip:" + clip_id, "filename", function (err, filename) {
+        // Check to see if the spectrogram exists already. Otherwise, generate it.
+        var spectrogram_filename = dir_name + "/" + clip_id + ".png";
+        path.exists(spectrogram_filename, function (exists) {
+            if (exists) {
+                cb(null, spectrogram_filename);
+            } else {
+                var cmd = "sox \"" + filename + "\" -n spectrogram "  // rate 3k
+                        + "-x 800 -y 200 -m -r -l -o \""
+                        + spectrogram_filename + "\"";
+
+                child.exec(cmd, function (error, stdout, stderr) {
+                    cb(error ? stderr : null, spectrogram_filename);
+                });
+            }
+        });
+    });
+};
+
 // Given the filename of a clip, import it into the ClipLibrary.
 // De-duplicates clips via the SHA-1 checksum.
 ClipLibrary.prototype.add_new_clip = function (clip_filename, cb) {
@@ -150,7 +172,9 @@ ClipLibrary.prototype.add_new_clip = function (clip_filename, cb) {
                                 .exec();
 
                             // And remove the file from the "new" directory.
-                            fs.unlink(clip_filename, cb);  // Returns err, if any.
+                            fs.unlink(clip_filename, function (err) {
+                                cb(err, contents);
+                            });
                         });
                     }
                 });

@@ -47,11 +47,14 @@ Worker.prototype.operations = {
             return cb(task, false);
         }
 
-        this.clip_library.add_new_clip(task.target, function (err) {
+        var cl = this.clip_library;
+        this.clip_library.add_new_clip(task.target, function (err, clip) {
             if (err) {
                 task.error = err;
                 cb(task, false);
             } else {
+                // Kick off the spectrogram generation, asynchronously:
+                cl.get_spectrogram_filename(clip.id, function (err, fn) { });
                 cb(task, true);
             }
         });

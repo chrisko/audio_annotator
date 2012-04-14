@@ -180,27 +180,17 @@ languishes.put("/clips/:id", function (req, res) {
 });
 
 languishes.get("/clips/:id/spectrogram", function (req, res) {
-    redis.hget("clip:" + req.params.id, "filename", function (err, filename) {
-        // Check to see if the spectrogram exists already. Otherwise, generate it.
-        var spectrogram_filename = config.data_dir + "/" + req.params.id + ".png";
-        path.exists(spectrogram_filename, function (exists) {
-            if (exists) {
-                res.sendfile(spectrogram_filename);
+    languishes.clip_library.get_spectrogram_filename(req.params.id,
+        function (err, filename) {
+            if (err) {
+                console.log("sox exec error: " + error);
+                res.writeHead(500, { "content-type": "text/plain" });
+                res.end("Error generating spectrogram: " + error);
             } else {
-                var cmd = "sox \"" + filename + "\" -n spectrogram "
-                        + "-x 1280 -y 800 -m -r -l -o \""
-                        + spectrogram_filename + "\"";
-
-                require("child_process").exec(cmd, function (error, stdout, stderr) {
-                    if (error) {
-                        console.log("sox exec error: " + error);
-                    } else {
-                        res.sendfile(spectrogram_filename);
-                    }
-                });
+                res.sendfile(filename);
             }
-        });
-    });
+        }
+    );
 });
 
 languishes.get("/clips/:id/segments", function (req, res) {
