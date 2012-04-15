@@ -41,6 +41,7 @@ var Segment = Backbone.Model.extend({
 
         // Add the ids for each new SVG element, so we can access them later:
         if (this.isNew()) {
+            console.log("segment render isNew()!");
             group.attr("class", "segment-group new-segment");
         } else {
             group.attr("id", "segment-" + this.id + "-group");
@@ -81,6 +82,10 @@ var Segment = Backbone.Model.extend({
         $(".segment-group:not(.new-segment) .label").tooltip({
             title: "Click to edit", placement: "bottom"
         });
+
+        // If anyone out there is listening (like the EditPane logic),
+        // trigger a "segment:rendered" event to kick off other processes:
+        this.trigger("segment:rendered");
     }
 });
 

@@ -208,7 +208,6 @@ languishes.get("/clips/:clipid/segments/:segmentid", function (req, res) {
 });
 
 languishes.post("/clips/:clipid/segments", function (req, res) {
-    console.log(req.body);
     // Get the next available segment id for this particular clip:
     redis.incr("clip:" + req.params.clipid + ":segment:next", function (err, id) {
         if (err) {
@@ -218,11 +217,12 @@ languishes.post("/clips/:clipid/segments", function (req, res) {
         } else {
             console.log("Adding new segment id " + id);
             var multi = redis.multi();
+            var label = (req.body.label && req.body.label.match(/\S/)) ? req.body.label : "";
             multi.hmset("clip:" + req.params.clipid + ":segment:" + id,
                 "id", id,
                 "added", Date.now(),
                 "layer", req.body.layer,
-                "label", req.body.label,
+                "label", label,
                 "start", req.body.start,
                 "end", req.body.end
             );
@@ -238,9 +238,31 @@ languishes.post("/clips/:clipid/segments", function (req, res) {
                     // the server. In our case, it's just the "id" field.
                     res.writeHead(200, { "content-type": "application/json" });
                     res.end(JSON.stringify({ "id": id }));
-                    console.log(JSON.stringify({ "id": id }));
                 }
             });
+        }
+    });
+});
+
+languishes.put("/clips/:clipid/segments/:segmentid", function (req, res) {
+    var multi = redis.multi();
+    var label = (req.body.label && req.body.label.match(/\S/)) ? req.body.label : "";
+    multi.hmset("clip:" + req.params.clipid + ":segment:" + req.params.segmentid,
+        "updated", Date.now(),
+        "layer", req.body.layer,
+        "label", label,
+        "start", req.body.start,
+        "end", req.body.end
+    );
+
+    multi.exec(function (err) {
+        if (err) {
+            console.log("Error updating segment: " + err);
+            res.writeHead(500, { "content-type": "text/plain" });
+            res.end("Error updating segment: " + err);
+        } else {
+            res.writeHead(200, { "content-type": "text/plain" });
+            res.end("Updated segment.");
         }
     });
 });

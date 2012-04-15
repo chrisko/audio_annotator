@@ -119,7 +119,8 @@ var ClipView = Backbone.View.extend({
     render: function () {
         this.$el.html(this.template({ id: this.model.id }));
 
-        this.on("all", function (e) { console.log(e) });
+        // If you want to log every event (for debugging purposes):
+        //this.on("all", function (e) { console.log(e) });
 
         // Create all the subcomponents of this view:
         this.audio = new ClipAudio(this, this.model.id);

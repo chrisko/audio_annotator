@@ -38,6 +38,7 @@
         $LAB
         // Third-party scripts:
         .script("/js/jquery.js")
+        .script("/js/jquery-ui.js")
         .script("/js/underscore.js").wait()
         .script("/js/soundmanager2-nodebug-jsmin.js")
         .script("/js/d3.js")
@@ -73,11 +74,8 @@
         <div id="clipvis">
             <img id="spectrogram" src="clips/<%= id %>/spectrogram"></img>
             <svg id="clipsvg"></svg>
-            <div id="editpane"></div>
+            <div id="edit-pane"></div>
         </div>
-
-        <!-- The edit pane, for altering segments. -->
-        <div id="edit-pane"></div>
     </script>
 
     <!-- The list of clips. -->
@@ -115,7 +113,7 @@
             <div class="tooltip-arrow"></div>
             <div class="tooltip-inner">
                 <div class="edit-segment-name">
-                    <input class="input-label" type="text" value="<%= label %>"></input>
+                    <input class="input-label input-small" type="text" placeholder="Label" value="<%= label %>"></input>
                     <input type="button" class="delete-segment btn btn-mini btn-danger" value="Delete">
                     <input type="button" class="submit-segment btn btn-mini btn-primary" value="Submit">
                 </div>

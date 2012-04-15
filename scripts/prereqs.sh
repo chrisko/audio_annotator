@@ -47,11 +47,15 @@ if [[ ! -f js/d3.js ]]; then
     $CURLCMD $D3_URL/$D3_SHA1/d3.v2.js > js/d3.js
 fi
 
-if [[ ! -f js/jquery.js ]]; then
+if [[ ! -f js/jquery.js || ! -f js/jquery-ui.js ]]; then
     echo "Fetching jquery files..."
     JQUERY_URL=http://code.jquery.com
     JQUERY_VERSION=1.7.1
     $CURLCMD $JQUERY_URL/jquery-$JQUERY_VERSION.js > js/jquery.js
+
+    JQUERYUI_URL=https://ajax.googleapis.com/ajax/libs/jqueryui
+    JQUERYUI_VERSION=1.8.18
+    $CURLCMD $JQUERYUI_URL/$JQUERYUI_VERSION/jquery-ui.js > js/jquery-ui.js
 fi
 
 if [[ ! -f js/underscore.js || ! -f js/underscore-min.js ]]; then

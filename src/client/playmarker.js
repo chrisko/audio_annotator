@@ -71,7 +71,6 @@ Playmarker.prototype.update = function (pos, dur) {
 };
 
 Playmarker.prototype.pause_on_segment = function (segment) {
-    console.log("Pausing on segment starting at " + segment.get("start"));
     this.pause(segment.get("start") / this.clip.get("duration"));
 };
 
