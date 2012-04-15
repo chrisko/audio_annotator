@@ -152,6 +152,9 @@ var ClipView = Backbone.View.extend({
     },
 
     handle_keydown: function (e) {
+        // If some item (like a text field) has focus, don't play:
+        if (document.activeElement != document.body) return;
+
         var key = e.which || e.keyCode || e.keyChar;
         if (key == 32) {
             // Trigger the "audio:toggle" event, which the ClipAudio instance
