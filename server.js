@@ -207,9 +207,59 @@ languishes.get("/clips/:clipid/segments/:segmentid", function (req, res) {
     });
 });
 
-languishes.post("/clips/:id/segments", function (req, res) {
-    console.log("POST!");
+languishes.post("/clips/:clipid/segments", function (req, res) {
     console.log(req.body);
+    // Get the next available segment id for this particular clip:
+    redis.incr("clip:" + req.params.clipid + ":segment:next", function (err, id) {
+        if (err) {
+            console.log("Error getting new segment id: " + err);
+            res.writeHead(500, { "content-type": "text/plain" });
+            res.end("Error getting new segment id: " + err);
+        } else {
+            console.log("Adding new segment id " + id);
+            var multi = redis.multi();
+            multi.hmset("clip:" + req.params.clipid + ":segment:" + id,
+                "id", id,
+                "added", Date.now(),
+                "layer", req.body.layer,
+                "label", req.body.label,
+                "start", req.body.start,
+                "end", req.body.end
+            );
+
+            multi.zadd("clip:" + req.params.clipid + ":segments", req.body.start, id);
+            multi.exec(function (err) {
+                if (err) {
+                    console.log("Error inserting new segment: " + err);
+                    res.writeHead(500, { "content-type": "text/plain" });
+                    res.end("Error inserting new segment: " + err);
+                } else {
+                    // The response is JSON, with any attributes changed by
+                    // the server. In our case, it's just the "id" field.
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(JSON.stringify({ "id": id }));
+                    console.log(JSON.stringify({ "id": id }));
+                }
+            });
+        }
+    });
+});
+
+languishes.delete("/clips/:clipid/segments/:segmentid", function (req, res) {
+    var segment_key = "clip:" + req.params.clipid + ":segment:" + req.params.segmentid;
+    var segments_key = "clip:" + req.params.clipid + ":segments";
+    redis.zrem(segments_key, req.params.segmentid, function (err) {
+        if (err) {
+            console.log("Error deleting segment: " + err);
+            res.writeHead(500, { "content-type": "text/plain" });
+            res.end("Error deleting segment: " + err);
+        } else {
+            res.writeHead(200, { "content-type": "text/plain" });
+            res.end("Deleted segment " + req.params.segmentid + ".");
+            // Keep the hash, but asynchronously add a "deleted" timestamp:
+            redis.hset(segment_key, "deleted", Date.now());
+        }
+    });
 });
 
 ////////////////////////////////////////////////////////////////////////////////

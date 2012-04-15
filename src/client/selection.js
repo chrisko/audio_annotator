@@ -28,7 +28,7 @@ Selection.prototype.bind_to_dom = function () {
     this.svg.on("mouseup", handle_mouse_event);
 
     var sel = this;
-    function handle_mouse_event(d, i) {
+    function handle_mouse_event() {
         if (d3.event.type == "mousedown") {
             // Clear out any existing selection we might have:
             sel.anchor = d3.event.offsetX;

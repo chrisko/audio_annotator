@@ -122,6 +122,9 @@ function Segments(delegate, clip, svg_id) {
 
     // And to our collection's events:
     this.collection.on("add", this.add_one, this);
+    this.collection.on("change", this.change_one, this);
+    this.collection.on("remove", this.remove_one, this);
+    this.collection.on("reset", this.reset, this);
 }
 
 Segments.prototype.find_svg = function () {
@@ -185,6 +188,16 @@ Segments.prototype.unselect = function () {
 
 Segments.prototype.add_one = function (s) {
     s.render(this.clip, this.svg_id, this.delegate);
+};
+
+Segments.prototype.change_one = function (s) {
+    this.remove_one(s);
+    this.add_one(s);
+};
+
+Segments.prototype.remove_one = function (s) {
+    // If the segment was removed, get rid of the SVG representation:
+    $("#segment-" + s.id + "-group").remove();
 };
 
 Segments.prototype.render = function (range) {

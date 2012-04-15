@@ -103,6 +103,9 @@ var ClipView = Backbone.View.extend({
     selection: null,
     waveform: null,
 
+    update_timer: null,
+    update_every: 5,  // Fetch any new segments every five seconds.
+
     template: _.template($("#clipview-template").html()),
 
     initialize: function () {
@@ -116,14 +119,22 @@ var ClipView = Backbone.View.extend({
     render: function () {
         this.$el.html(this.template({ id: this.model.id }));
 
+        this.on("all", function (e) { console.log(e) });
+
         // Create all the subcomponents of this view:
         this.audio = new ClipAudio(this, this.model.id);
         this.playmarker = new Playmarker(this, "#clipsvg", this.model);
         this.segments = new Segments(this, this.model, "#clipsvg");
         this.selection = new Selection(this, "#clipsvg", this.model);
         // These subcomponents depend on the above ones:
-        this.editpane = new EditPane(this, this.model, this.segments);
+        this.editpane = new EditPane(this, "#main", this.model, this.segments);
         this.waveform = new Waveform(this, "#clipsvg", this.audio);
+
+        // And start the periodic timer, to look for server-side updates:
+        var collection = this.segments.collection;
+        this.update_timer = setInterval(function () {
+            collection.fetch({ add: true });
+        }, this.update_every * 1000);
 
         return this;
     },
@@ -134,6 +145,9 @@ var ClipView = Backbone.View.extend({
         if (this.playmarker) this.playmarker.destroy();
         if (this.selection) this.selection.destroy();
         if (this.waveform) this.waveform.destroy();
+
+        // And stop the periodic timer:
+        clearInterval(this.update_timer);
     },
 
     handle_keydown: function (e) {
