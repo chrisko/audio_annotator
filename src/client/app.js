@@ -134,7 +134,13 @@ var ClipView = Backbone.View.extend({
         // And start the periodic timer, to look for server-side updates:
         var collection = this.segments.collection;
         this.update_timer = setInterval(function () {
-            collection.fetch({ add: true });
+            if (collection.last_fetch_failed) return;
+            collection.fetch({
+                add: true,
+                error: function () {
+                    collection.last_fetch_failed = true;
+                }
+            });
         }, this.update_every * 1000);
 
         return this;

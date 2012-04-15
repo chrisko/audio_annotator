@@ -95,8 +95,12 @@ EditPane.prototype.edit_segment = function (segment) {
     // If the user hits enter while typing, automatically trigger a submit:
     $("#edit-pane .tooltip .input-label").on("keydown", function (e) {
         var key = e.which || e.keyCode || e.keyChar;
-        if (key == 13) {
+        if (key == 13 /* Enter */) {
             $("#edit-pane .tooltip .submit-segment").click();
+            editpane.remove_tooltip();
+            e.preventDefault();
+            return false;
+        } else if (key == 27 /* Escape */) {
             editpane.remove_tooltip();
             e.preventDefault();
             return false;
