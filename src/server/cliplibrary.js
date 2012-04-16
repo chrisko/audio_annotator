@@ -130,7 +130,7 @@ ClipLibrary.prototype.add_new_clip = function (clip_filename, cb) {
 
         // Convert the SHA-1 checksum to the more compressed clip id:
         var new_clip_id = sg.checksum_to_id(sha1_checksum);
-        var extension = path.extname(clip_filename);
+        var extension = path.extname(clip_filename) || ".wav";
         // Here's where the file will be once it's imported:
         var imported_name = sg.directory_name + "/" + new_clip_id + extension;
 

@@ -1,5 +1,5 @@
 // Via https://github.com/jwagener/recorder.js/blob/master/examples/example-2.html
-function timecode(ms) {
+function recorder_timecode(ms) {
     var hms = {
         h: Math.floor(ms / (60 * 60 * 1000)),
         m: Math.floor((ms / 60000) % 60),
@@ -16,47 +16,50 @@ function timecode(ms) {
     return tc.join(':');
 }
 
-Recorder.initialize({
-    swfSrc: "/swf/recorder.swf"
-});
 
-function record() {
+function recorder_record() {
+    // Enable the stop button while we're recording:
+    $("#stop-button").attr("disabled", false);
+
     Recorder.record({
         progress: function (ms) {
-            $("#time").html(timecode(ms));
+            $("#recorder-time").html(recorder_timecode(ms));
         }
     });
 }
 
-function play() {
+function recorder_play() {
+    // Enable the stop button while we're playing audio:
+    $("#stop-button").attr("disabled", false);
+
     Recorder.stop();
     Recorder.play({
         progress: function (ms) {
-            $("#time").html(timecode(ms));
+            $("#recorder-time").html(recorder_timecode(ms));
+        },
+        finished: function () {
+            $("#stop-button").attr("disabled", true);
         }
     });
 }
 
-function stop() {
+function recorder_stop() {
     Recorder.stop();
+    // Disable the stop button:
+    $("#stop-button").attr("disabled", true);
+    // And enable both play and upload:
+    $("#play-button").attr("disabled", false);
+    $("#upload-button").attr("disabled", false);
 }
 
-function upload() {
+function recorder_upload() {
     Recorder.upload({
-        url: "http://localhost:3000/upload",
-        audioParam: "recorded_audio_clip"
+        method: "POST",
+        url: "/upload",
+        audioParam: "recorded_audio_clip",
+        success: function (clip_json) {
+            var clip = JSON.parse(clip_json);
+            window.app.navigate("clips/" + clip.id, { trigger: true });
+        }
     });
 }
-
-window.onload = function () {
-    $("#record_button").click(function () {
-        start_recording(Recorder);
-    });
-};
-
-//<a href="javascript:record()" id="record">Record</a>
-//<a href="javascript:play()" id="play">Play</a>
-//<a href="javascript:stop()" id="stop">Stop</a>
-//<a href="javascript:upload()" id="stop">Upload</a>
-
-//<span id="time">0:00:000</span>

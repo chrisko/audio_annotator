@@ -89,10 +89,27 @@ var ClipListView = Backbone.View.extend({
 });
 
 var RecordView = Backbone.View.extend({
-    //template: _.template($("#record-upload-template").html()),
+    template: _.template($("#record-upload-template").html()),
 
     initialize: function () {
-        //this.recorder = new Recorder(
+        Recorder.initialize({
+            swfSrc: "/swf/recorder.swf"
+        });
+    },
+
+    render: function () {
+        // Set the contents of the HTML via this view's template:
+        this.$el.html(this.template({ }));
+        // Disable the buttons we're initially not allowed to push:
+        this.$el.find("#stop-button").attr("disabled", true);
+        this.$el.find("#play-button").attr("disabled", true);
+        this.$el.find("#upload-button").attr("disabled", true);
+
+        // And cue up the button actions to interface with record.js:
+        this.$el.find("#record-button").on("click", recorder_record);
+        this.$el.find("#stop-button").on("click", recorder_stop);
+        this.$el.find("#play-button").on("click", recorder_play);
+        this.$el.find("#upload-button").on("click", recorder_upload);
     }
 });
 
@@ -227,7 +244,8 @@ Languishes = Backbone.Router.extend({
         "": "index",
         "clips/:id": "hashclips",
         // This format is based on http://www.w3.org/TR/media-frags (§4.2.1)
-        "clips/:id/:range": "hashclips"
+        "clips/:id/:range": "hashclips",
+        "record": "record_ui"
     },
 
     initialize: function () {
@@ -255,5 +273,10 @@ Languishes = Backbone.Router.extend({
                 console.log(err);
             }
         });
+    },
+
+    record_ui: function () {
+        var recordview = new RecordView();
+        this.view_transition.showView(recordview);
     }
 });

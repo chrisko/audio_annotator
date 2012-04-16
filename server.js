@@ -45,19 +45,13 @@ io.sockets.on("connection", function (socket) {
 });
 
 languishes.configure(function() {
-    languishes.set("views", config.views_dir);
-
-    // Use mustache templating for .html files, via the stache module.
-    languishes.set("view engine", "mustache");
-    languishes.register(".html", require("stache"));
-
-    // Set default view options, that we won't have to pass in every time:
-    languishes.set("view options", { layout: false });
-
     // Ordering here matters. The request is passed along.
+
     // Parse the request body (which in the case of a POST request may be a
     // form, or JSON data) and store the parameters is req.body.
-    languishes.use(express.bodyParser());
+    languishes.use(express.bodyParser({
+        uploadDir: config.data_dir + "new"
+    }));
 
     languishes.use(express.logger({ format: ":method :url" }));
     languishes.use(express.static(config.static_dir));
@@ -85,10 +79,6 @@ languishes.get("/clips", function (req, res) {
     languishes.clip_library.get_all_clips(function (ids) {
         res.json(ids);
     });
-});
-
-languishes.get("/record", function (req, res) {
-    res.render("record.html", { });
 });
 
 languishes.get(/^\/clips\/([^\/]+)\.wav$/, function (req, res) {
@@ -288,22 +278,16 @@ languishes.delete("/clips/:clipid/segments/:segmentid", function (req, res) {
 // Uploading Clips /////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 languishes.post("/upload", function (req, res) {
-    // Use Felix Geisendörfer's "formidable" to handle multipart uploads:
-    var form = new formidable.IncomingForm();
-    form.uploadDir = languishes.clip_library.new_uploads_dir;
-    form.keepExtensions = true;
-
-    form.parse(req, function(err, fields, files) {
-        file = files["recorded_audio_clip"];
-        languishes.clip_library.add_new_clip(file.path, function (err) {
-            if (err) {
-                res.writeHead(500, { "content-type": "text/plain" });
-                res.end(err);
-            } else {
-                res.writeHead(200, { "content-type": "text/plain" });
-                res.end(util.inspect({ fields: fields, files: files }));
-            }
-        });
+    file = req.files["recorded_audio_clip"];
+    languishes.clip_library.add_new_clip(file.path, function (err, clip) {
+        if (err) {
+            res.writeHead(500, { "content-type": "text/plain" });
+            res.end(err);
+        } else {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify(clip));
+            console.log(JSON.stringify(clip));
+        }
     });
 });
 

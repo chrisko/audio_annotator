@@ -4,7 +4,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="author" content="Chris Koenig" />
 
-        <title>accidence</title>
+        <!--<title>accidence</title>-->
 
         <!-- CSS -->
    <!-- <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" /> -->
@@ -17,12 +17,14 @@
             <div class="navbar navbar-fixed-top">
                 <div class="navbar-inner">
                     <div class="container">
-                        <a class="brand" href="#">accidence</a>
-                        <a class="btn btn-navbar">Clips</a>
-
-                    <!--<form class="navbar-search pull-right">
-                            <input type="text" class="search-query" placeholder="Search">
-                        </form>-->
+                        <ul class="nav">
+                            <li class="active">
+                                <a href="javascript:window.app.navigate('#', { trigger: true })">Clips</a>
+                            </li>
+                            <li class="active">
+                                <a href="javascript:window.app.navigate('#record', { trigger: true })">Record New Clip</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -40,6 +42,7 @@
         .script("/js/jquery.js")
         .script("/js/jquery-ui.js")
         .script("/js/underscore.js").wait()
+        .script("/js/recorder.js")
         .script("/js/soundmanager2-nodebug-jsmin.js")
         .script("/js/d3.js")
       //.script("/socket.io/socket.io.js")
@@ -58,6 +61,7 @@
         .script("/js/clipaudio.js")
         .script("/js/editpane.js")
         .script("/js/playmarker.js")
+        .script("/js/record.js")
         .script("/js/segments.js")
         .script("/js/selection.js")
         .script("/js/waveform.js")
@@ -87,11 +91,13 @@
 
     <!-- The interface for recording and uploading new clips. -->
     <script type="text/template" id="record-upload-template">
-        <div id="recordform">
-            <label class="user-instruction">Record a new clip</label>
-        </div>
-        <div id="uploadform">
-            <label class="user-instruction">Upload a sound file</label>
+        <div id="recorder-container"></div>
+        <div id="record-form" class="well">
+            <span id="recorder-time">0:00:000</span>
+            <button id="record-button" class="btn btn-large"><i class="icon-headphones"></i>&nbsp;Start Recording</button>
+            <button id="stop-button" class="btn btn-large"><i class="icon-stop"></i>&nbsp;Stop</button>
+            <button id="play-button" class="btn btn-large"><i class="icon-play"></i>&nbsp;Play</button>
+            <button id="upload-button" class="btn btn-large"><i class="icon-upload-alt"></i>&nbsp;Upload</button>
         </div>
     </script>
 

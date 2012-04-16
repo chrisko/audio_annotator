@@ -24,7 +24,7 @@ mkdir swf  &> /dev/null || true
 if [[ ! -f js/recorder.js || ! -f swf/recorder.swf ]]; then
     echo "Fetching recorder.js files..."
     RECORDERJS_URL=https://raw.github.com/jwagener/recorder.js
-    RECORDERJS_SHA1=881498c1b8dbb8b10bc480be6fbad8b723fb1895
+    RECORDERJS_SHA1=5306453efe9a9a427bb5add2a8a7b1df31361ccd
     $CURLCMD $RECORDERJS_URL/$RECORDERJS_SHA1/recorder.js > js/recorder.js
     $CURLCMD $RECORDERJS_URL/$RECORDERJS_SHA1/recorder.swf > swf/recorder.swf
 fi
