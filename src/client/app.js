@@ -238,7 +238,7 @@ function ViewTransition() {
     };
 }
 
-Languishes = Backbone.Router.extend({
+AudioAnnotator = Backbone.Router.extend({
     // Maps URL fragments to functions below, to handle link rendering.
     routes: {
         "": "index",

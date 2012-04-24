@@ -1,4 +1,3 @@
-#!/usr/local/bin/node
 // Chris Koenig <ckoenig@seas.upenn.edu>
 // CIS-400 Senior Design Project
 
@@ -35,8 +34,8 @@ var config = {
 ////////////////////////////////////////////////////////////////////////////////
 // Express Configuration ///////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-var languishes = express.createServer();
-var io = require("socket.io").listen(languishes);
+var backend = express.createServer();
+var io = require("socket.io").listen(backend);
 
 io.sockets.on("connection", function (socket) {
     socket.on("mouse_move", function (data) {
@@ -44,44 +43,44 @@ io.sockets.on("connection", function (socket) {
     });
 });
 
-languishes.configure(function() {
+backend.configure(function() {
     // Ordering here matters. The request is passed along.
 
     // Parse the request body (which in the case of a POST request may be a
     // form, or JSON data) and store the parameters is req.body.
-    languishes.use(express.bodyParser({
+    backend.use(express.bodyParser({
         uploadDir: config.data_dir + "new"
     }));
 
-    languishes.use(express.logger({ format: ":method :url" }));
-    languishes.use(express.static(config.static_dir));
+    backend.use(express.logger({ format: ":method :url" }));
+    backend.use(express.static(config.static_dir));
 });
 
-languishes.configure("dev", function() {
-    languishes.use(express.errorHandler({ dumpExceptions: true,
-                                          showStack: true }));
+backend.configure("dev", function() {
+    backend.use(express.errorHandler({ dumpExceptions: true,
+                                       showStack: true }));
 });
 
 // Production environment config. Don't show too much.
-languishes.configure("prod", function() {
-    languishes.use(express.errorHandler());
-    // TODO: languishes.use("view cache") for caching.
+backend.configure("prod", function() {
+    backend.use(express.errorHandler());
+    // TODO: backend.use("view cache") for caching.
 });
 
 ////////////////////////////////////////////////////////////////////////////////
-languishes.get("/", function (req, res) {
+backend.get("/", function (req, res) {
     // Our Backbone.js app is fully contained in the index.html file. It will
     // load its dependencies and data as required, using the API calls below.
     res.sendfile(config.static_dir + "index.html");
 });
 
-languishes.get("/clips", function (req, res) {
-    languishes.clip_library.get_all_clips(function (ids) {
+backend.get("/clips", function (req, res) {
+    backend.clip_library.get_all_clips(function (ids) {
         res.json(ids);
     });
 });
 
-languishes.get(/^\/clips\/([^\/]+)\.wav$/, function (req, res) {
+backend.get(/^\/clips\/([^\/]+)\.wav$/, function (req, res) {
     var filename = config.data_dir + req.params[0] + ".wav";
     path.exists(filename, function (exists) {
         if (!exists) {
@@ -110,8 +109,8 @@ languishes.get(/^\/clips\/([^\/]+)\.wav$/, function (req, res) {
     });
 });
 
-languishes.get("/clips/:id/data", function (req, res) {
-    languishes.clip_library.get_clip_location(req.params.id, function (filename) {
+backend.get("/clips/:id/data", function (req, res) {
+    backend.clip_library.get_clip_location(req.params.id, function (filename) {
         wav.parse_wav(filename,
             function (err) {
                 res.writeHead(500, { "content-type": "text/plain" });
@@ -128,7 +127,7 @@ languishes.get("/clips/:id/data", function (req, res) {
     });
 });
 
-languishes.get("/clips/:id", function (req, res) {
+backend.get("/clips/:id", function (req, res) {
     var filename = config.data_dir + req.params.id + ".wav";
     wav.parse_wav(filename,
         function (err) {
@@ -146,7 +145,7 @@ languishes.get("/clips/:id", function (req, res) {
         });
 });
 
-languishes.put("/clips/:id", function (req, res) {
+backend.put("/clips/:id", function (req, res) {
     try {
         var name = req.body.name;
         var clean_name = validator.sanitize(name).xss();
@@ -169,8 +168,8 @@ languishes.put("/clips/:id", function (req, res) {
     }
 });
 
-languishes.get("/clips/:id/spectrogram", function (req, res) {
-    languishes.clip_library.get_spectrogram_filename(req.params.id,
+backend.get("/clips/:id/spectrogram", function (req, res) {
+    backend.clip_library.get_spectrogram_filename(req.params.id,
         function (err, filename) {
             if (err) {
                 console.log("sox exec error: " + error);
@@ -183,21 +182,21 @@ languishes.get("/clips/:id/spectrogram", function (req, res) {
     );
 });
 
-languishes.get("/clips/:id/segments", function (req, res) {
+backend.get("/clips/:id/segments", function (req, res) {
     var clip_id = req.params.id;
-    languishes.clip_library.get_all_clip_segments(clip_id, function (segments) {
+    backend.clip_library.get_all_clip_segments(clip_id, function (segments) {
         res.json(segments);
     });
 });
 
-languishes.get("/clips/:clipid/segments/:segmentid", function (req, res) {
+backend.get("/clips/:clipid/segments/:segmentid", function (req, res) {
     var clip_id = req.params.clipid, segment_id = req.params.segmentid;
-    languishes.clip_library.get_segment(clip_id, segment_id, function (segment) {
+    backend.clip_library.get_segment(clip_id, segment_id, function (segment) {
         res.json(segment);
     });
 });
 
-languishes.post("/clips/:clipid/segments", function (req, res) {
+backend.post("/clips/:clipid/segments", function (req, res) {
     // Get the next available segment id for this particular clip:
     redis.incr("clip:" + req.params.clipid + ":segment:next", function (err, id) {
         if (err) {
@@ -234,7 +233,7 @@ languishes.post("/clips/:clipid/segments", function (req, res) {
     });
 });
 
-languishes.put("/clips/:clipid/segments/:segmentid", function (req, res) {
+backend.put("/clips/:clipid/segments/:segmentid", function (req, res) {
     var multi = redis.multi();
     var label = (req.body.label && req.body.label.match(/\S/)) ? req.body.label : "";
     multi.hmset("clip:" + req.params.clipid + ":segment:" + req.params.segmentid,
@@ -257,7 +256,7 @@ languishes.put("/clips/:clipid/segments/:segmentid", function (req, res) {
     });
 });
 
-languishes.delete("/clips/:clipid/segments/:segmentid", function (req, res) {
+backend.delete("/clips/:clipid/segments/:segmentid", function (req, res) {
     var segment_key = "clip:" + req.params.clipid + ":segment:" + req.params.segmentid;
     var segments_key = "clip:" + req.params.clipid + ":segments";
     redis.zrem(segments_key, req.params.segmentid, function (err) {
@@ -277,9 +276,9 @@ languishes.delete("/clips/:clipid/segments/:segmentid", function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////
 // Uploading Clips /////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-languishes.post("/upload", function (req, res) {
+backend.post("/upload", function (req, res) {
     file = req.files["recorded_audio_clip"];
-    languishes.clip_library.add_new_clip(file.path, function (err, clip) {
+    backend.clip_library.add_new_clip(file.path, function (err, clip) {
         if (err) {
             res.writeHead(500, { "content-type": "text/plain" });
             res.end(err);
@@ -295,9 +294,9 @@ languishes.post("/upload", function (req, res) {
 // Server Startup //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // Synchronously initialize the clip library:
-languishes.clip_library = new ClipLibrary(config.data_dir, redis);
-languishes.worker = new Worker(languishes.clip_library);
+backend.clip_library = new ClipLibrary(config.data_dir, redis);
+backend.worker = new Worker(backend.clip_library);
 
-languishes.listen(config.port);
+backend.listen(config.port);
 console.log("Express server listening on port %d in %s mode",
-            languishes.address().port, languishes.settings.env);
+            backend.address().port, backend.settings.env);

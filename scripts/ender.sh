@@ -36,10 +36,10 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-lessc --include-path="site/bootstrap/less" src/static/languishes.less \
-    > site/static/css/languishes.css
+lessc --include-path="site/bootstrap/less" src/static/styles.less \
+    > site/static/css/styles.css
 
 if [[ $? -ne 0 ]]; then
-    echo "Error compiling languishes.less into CSS."
+    echo "Error compiling styles.less into CSS."
     exit 1
 fi
